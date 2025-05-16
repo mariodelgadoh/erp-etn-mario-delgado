@@ -2398,11 +2398,6 @@ class SistemaERP:
         tab_control.add(tab_inventario, text="Inventario General")
         self.setup_tab_inventario(tab_inventario)
         
-        # Pestaña de Entradas/Salidas
-        tab_movimientos = ttk.Frame(tab_control)
-        tab_control.add(tab_movimientos, text="Historial de Compras")
-        self.setup_tab_movimientos(tab_movimientos)
-        
         # Pestaña de Salidas
         tab_salidas = ttk.Frame(tab_control)
         tab_control.add(tab_salidas, text="Historial de Salidas")
@@ -2939,63 +2934,76 @@ class SistemaERP:
         descripcion = valores[2]
         cantidad_disponible = int(valores[3])
         proveedor = valores[7]
-        
+
         # Crear ventana emergente
         popup = tk.Toplevel(self.root)
         popup.title("Registrar Salida de Inventario")
-        popup.geometry("450x350")
+        popup.geometry('450x350')
         popup.grab_set()  # Hace la ventana modal
-        
+
         frame = tk.Frame(popup)
         frame.pack(padx=20, pady=20, fill=tk.BOTH, expand=True)
-        
+
         # Mostrar información del producto
         tk.Label(frame, text="Registrar Salida de Inventario", font=("Arial", 14, "bold")).grid(row=0, column=0, columnspan=2, sticky="w", pady=5)
-        
         tk.Label(frame, text="Producto:", font=("Arial", 10, "bold")).grid(row=1, column=0, sticky="w", pady=2)
-        tk.Label(frame, text=f"{tipo_producto} - {descripcion}", font=("Arial", 10)).grid(row=1, column=1, sticky="w", pady=2)
-        
+        tk.Label(frame, text=f"[{tipo_producto}] - {descripcion}", font=("Arial", 10)).grid(row=1, column=1, sticky="w", pady=2)
         tk.Label(frame, text="Proveedor:", font=("Arial", 10, "bold")).grid(row=2, column=0, sticky="w", pady=2)
         tk.Label(frame, text=proveedor, font=("Arial", 10)).grid(row=2, column=1, sticky="w", pady=2)
-        
         tk.Label(frame, text="Disponible:", font=("Arial", 10, "bold")).grid(row=3, column=0, sticky="w", pady=2)
         tk.Label(frame, text=str(cantidad_disponible), font=("Arial", 10)).grid(row=3, column=1, sticky="w", pady=2)
-        
+
         # Campos del formulario
         tk.Label(frame, text="Cantidad a retirar:", font=("Arial", 10)).grid(row=4, column=0, sticky="w", pady=5)
         cantidad_entry = tk.Entry(frame, width=10, font=("Arial", 10))
         cantidad_entry.grid(row=4, column=1, sticky="w", pady=5)
         cantidad_entry.insert(0, "1")
-        
+
         tk.Label(frame, text="Destino/Uso:", font=("Arial", 10)).grid(row=5, column=0, sticky="w", pady=5)
         destino_entry = tk.Entry(frame, width=30, font=("Arial", 10))
         destino_entry.grid(row=5, column=1, sticky="w", pady=5)
-        
+
         tk.Label(frame, text="Responsable:", font=("Arial", 10)).grid(row=6, column=0, sticky="w", pady=5)
-        responsable_entry = tk.Entry(frame, width=30, font=("Arial", 10))
-        responsable_entry.grid(row=6, column=1, sticky="w", pady=5)
         
+        # Lista de responsables predefinidos
+        responsables = [
+            "Admin",
+            "Jefe Recursos Humanos", 
+            "Jefe Finanzas", 
+            "Jefe Inventario", 
+            "Jefe Compras", 
+            "Jefe Proveedores", 
+            "Jefe Ventas", 
+            "Jefe Logística", 
+            "Jefe Taller"
+        ]
+        
+        responsable_combobox = ttk.Combobox(frame, values=responsables, state="readonly", width=28, font=("Arial", 10))
+        responsable_combobox.grid(row=6, column=1, sticky="w", pady=5)
+        responsable_combobox.set(responsables[0])  # Establecer el primer valor por defecto
+
         tk.Label(frame, text="Notas:", font=("Arial", 10)).grid(row=7, column=0, sticky="w", pady=5)
         notas_entry = tk.Entry(frame, width=30, font=("Arial", 10))
         notas_entry.grid(row=7, column=1, sticky="w", pady=5)
-        
+
         # Frame para botones
         botones_frame = tk.Frame(frame)
         botones_frame.grid(row=8, column=0, columnspan=2, pady=15)
-        
+
         # Botón guardar
-        tk.Button(botones_frame, text="Registrar Salida", command=lambda: self.registrar_salida_inventario(
-            id_producto,
-            tipo_producto,
-            descripcion,
-            cantidad_entry.get(),
-            destino_entry.get(),
-            responsable_entry.get(),
-            notas_entry.get(),
-            cantidad_disponible,
-            popup
-        )).pack(side=tk.LEFT, padx=5)
-        
+        tk.Button(botones_frame, text="Registrar Salida", 
+                command=lambda: self.registrar_salida_inventario(
+                    id_producto, 
+                    tipo_producto, 
+                    descripcion, 
+                    cantidad_entry.get(), 
+                    destino_entry.get(), 
+                    responsable_combobox.get(), 
+                    notas_entry.get(), 
+                    cantidad_disponible, 
+                    popup
+                )).pack(side=tk.LEFT, padx=5)
+
         # Botón cancelar
         tk.Button(botones_frame, text="Cancelar", command=popup.destroy).pack(side=tk.LEFT, padx=5)
 
@@ -3051,7 +3059,6 @@ class SistemaERP:
             
             # Actualizar todas las vistas afectadas
             self.cargar_inventario()
-            self.cargar_movimientos()
             self.cargar_salidas()
             
         except Exception as e:
