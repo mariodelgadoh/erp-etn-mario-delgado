@@ -1593,86 +1593,120 @@ class SistemaERP:
     def setup_tab_transacciones(self, parent):
         # Frame principal
         frame = tk.Frame(parent, bg='white', bd=2, relief='ridge')
-        frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+        frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
-        # Controles superiores
+        # Configurar grid para mejor control de expansión
+        frame.grid_rowconfigure(1, weight=1)
+        frame.grid_columnconfigure(0, weight=1)
+        
+        # Controles superiores (fila 0)
         controls_frame = tk.Frame(frame, bg='white')
-        controls_frame.pack(fill=tk.X, pady=10, padx=10)
+        controls_frame.grid(row=0, column=0, sticky='ew', pady=5, padx=5)
         
-        # Configurar estilo para combobox
-        style = ttk.Style()
-        style.configure('TCombobox', fieldbackground='white', background='white')
+        # Línea de controles (Filtro, Tipo, Concepto, Monto, Registrar)
+        linea_controles = tk.Frame(controls_frame, bg='white')
+        linea_controles.pack(fill=tk.X, pady=5)
         
-        # Frame para filtros
-        filter_frame = tk.Frame(frame, bg='white')
-        filter_frame.pack(fill=tk.X, pady=5, padx=10)
-        
-        # Filtro por tipo de transacción
-        tk.Label(filter_frame, text="Filtrar por:", bg='white', fg='#003366').pack(side=tk.LEFT, padx=5)
-        self.filtro_transaccion = ttk.Combobox(filter_frame, values=["Ver todo", "Ingresos", "Egresos"], width=15)
+        # Filtro por tipo de transacción (AHORA PRIMERO)
+        tk.Label(linea_controles, text="Filtrar:", bg='white', fg='#003366').pack(side=tk.LEFT, padx=5)
+        self.filtro_transaccion = ttk.Combobox(linea_controles, values=["Ver todo", "Ingresos", "Egresos"], width=15)
         self.filtro_transaccion.pack(side=tk.LEFT, padx=5)
         self.filtro_transaccion.set("Ver todo")
         self.filtro_transaccion.bind("<<ComboboxSelected>>", lambda e: self.cargar_transacciones())
         
-        # Opciones de transacción
-        tk.Label(controls_frame, text="Tipo:", bg='white', fg='#003366').pack(side=tk.LEFT, padx=5)
-        self.tipo_transaccion = ttk.Combobox(controls_frame, values=["Ingreso", "Egreso"], width=15)
+        # Tipo de transacción (AHORA DESPUÉS DEL FILTRO)
+        tk.Label(linea_controles, text="Tipo:", bg='white', fg='#003366').pack(side=tk.LEFT, padx=(15,5))
+        self.tipo_transaccion = ttk.Combobox(linea_controles, values=["Ingreso", "Egreso"], width=15)
         self.tipo_transaccion.pack(side=tk.LEFT, padx=5)
         
-        tk.Label(controls_frame, text="Concepto:", bg='white', fg='#003366').pack(side=tk.LEFT, padx=5)
-        self.concepto_transaccion = tk.Entry(controls_frame, width=30, relief='solid', bd=1)
+        # Concepto
+        tk.Label(linea_controles, text="Concepto:", bg='white', fg='#003366').pack(side=tk.LEFT, padx=5)
+        self.concepto_transaccion = tk.Entry(linea_controles, width=30, relief='solid', bd=1)
         self.concepto_transaccion.pack(side=tk.LEFT, padx=5)
         
-        tk.Label(controls_frame, text="Monto:", bg='white', fg='#003366').pack(side=tk.LEFT, padx=5)
-        self.monto_transaccion = tk.Entry(controls_frame, width=15, relief='solid', bd=1)
+        # Monto
+        tk.Label(linea_controles, text="Monto:", bg='white', fg='#003366').pack(side=tk.LEFT, padx=5)
+        self.monto_transaccion = tk.Entry(linea_controles, width=15, relief='solid', bd=1)
         self.monto_transaccion.pack(side=tk.LEFT, padx=5)
         
-        # Botón para registrar
-        tk.Button(controls_frame, text="Registrar", command=self.registrar_transaccion,
+        # Botón para registrar (alineado a la derecha pero a la misma altura)
+        tk.Button(linea_controles, text="Registrar", command=self.registrar_transaccion,
                 bg='#003366', fg='white', font=('Arial', 10, 'bold'),
                 relief='flat', activebackground='#002244').pack(side=tk.RIGHT, padx=10)
         
-        # Treeview para mostrar transacciones
+        # Frame para Treeview y scrollbar (fila 1)
+        tree_frame = tk.Frame(frame, bg='white')
+        tree_frame.grid(row=1, column=0, sticky='nsew', pady=5, padx=5)
+        tree_frame.grid_rowconfigure(0, weight=1)
+        tree_frame.grid_columnconfigure(0, weight=1)
+        
+        # Configurar estilo para Treeview
         style = ttk.Style()
         style.configure("Treeview", 
                     background="white", 
-                    foreground="#003366",
+                    foreground="#003366",  # Color original de las letras
                     rowheight=25,
-                    fieldbackground="white")
-        style.configure("Treeview.Heading", font=('Arial', 10, 'bold'))
+                    fieldbackground="white",
+                    font=('Arial', 10))
+        style.configure("Treeview.Heading", 
+                    font=('Arial', 10, 'bold'),
+                    background='white',
+                    foreground='#003366',  # Color original de los encabezados
+                    padding=5)
         style.map('Treeview', background=[('selected', '#003366')])
         
-        # Definir todas las columnas posibles
+        # Definir todas las columnas
         self.all_columns = ("ID", "Fecha", "Concepto", "Ingreso", "Egreso", "Saldo")
         
-        # Crear Treeview con todas las columnas
-        self.tree_transacciones = ttk.Treeview(frame, columns=self.all_columns, show="headings", style="Treeview")
+        # Crear Treeview
+        self.tree_transacciones = ttk.Treeview(
+            tree_frame, 
+            columns=self.all_columns, 
+            show="headings",
+            selectmode='browse'
+        )
         
-        # Configurar encabezados y columnas
-        self.tree_transacciones.heading("ID", text="ID", anchor='center')
-        self.tree_transacciones.heading("Fecha", text="Fecha", anchor='center')
-        self.tree_transacciones.heading("Concepto", text="Concepto", anchor='center')
-        self.tree_transacciones.heading("Ingreso", text="Ingreso", anchor='center')
-        self.tree_transacciones.heading("Egreso", text="Egreso", anchor='center')
-        self.tree_transacciones.heading("Saldo", text="Saldo", anchor='center')
+        # Configurar encabezados CENTRADOS
+        for col in self.all_columns:
+            self.tree_transacciones.heading(col, text=col, anchor='center')
         
-        self.tree_transacciones.column("ID", width=50, anchor='center')
-        self.tree_transacciones.column("Fecha", width=120, anchor='center')
-        self.tree_transacciones.column("Concepto", width=300, anchor='w', stretch=tk.YES)
-        self.tree_transacciones.column("Ingreso", width=100, anchor='center')
-        self.tree_transacciones.column("Egreso", width=100, anchor='center')
-        self.tree_transacciones.column("Saldo", width=120, anchor='center')
+        # Configurar columnas
+        self.tree_transacciones.column("ID", width=50, anchor='center', stretch=False)
+        self.tree_transacciones.column("Fecha", width=120, anchor='center', stretch=False)
+        self.tree_transacciones.column("Concepto", anchor='w', minwidth=200, stretch=True)
+        self.tree_transacciones.column("Ingreso", width=100, anchor='center', stretch=False)
+        self.tree_transacciones.column("Egreso", width=100, anchor='center', stretch=False)
+        self.tree_transacciones.column("Saldo", width=120, anchor='center', stretch=False)
         
         # Configurar tags para colores de fila
         self.tree_transacciones.tag_configure('ingreso', background='#e6f7e6')
         self.tree_transacciones.tag_configure('egreso', background='#ffe6e6')
         
+        # Scrollbar
+        scrollbar = ttk.Scrollbar(
+            tree_frame, 
+            orient="vertical", 
+            command=self.tree_transacciones.yview
+        )
+        self.tree_transacciones.configure(yscrollcommand=scrollbar.set)
+        
+        # Empaquetar Treeview y Scrollbar
+        self.tree_transacciones.grid(row=0, column=0, sticky='nsew')
+        scrollbar.grid(row=0, column=1, sticky='ns')
+        
         # Tooltip para concepto
         self.tooltip = tk.Toplevel(self.root)
         self.tooltip.withdraw()
         self.tooltip.overrideredirect(True)
-        self.tooltip_label = tk.Label(self.tooltip, text="", background="lightyellow", 
-                                    relief="solid", borderwidth=1, wraplength=300)
+        self.tooltip_label = tk.Label(
+            self.tooltip, 
+            text="", 
+            background="lightyellow", 
+            relief="solid", 
+            borderwidth=1, 
+            wraplength=300,
+            font=('Arial', 9)
+        )
         self.tooltip_label.pack()
         
         def show_tooltip(event):
@@ -1681,7 +1715,7 @@ class SistemaERP:
             if item and col == "#3":  # Columna Concepto
                 x, y, _, _ = self.tree_transacciones.bbox(item, col)
                 x += event.x_root - event.x
-                y += event.y_root - event.y + 20
+                y += event.y_root - event.y + 25
                 texto = self.tree_transacciones.item(item, "values")[2]
                 self.tooltip_label.config(text=texto)
                 self.tooltip.geometry(f"+{x}+{y}")
@@ -1692,13 +1726,6 @@ class SistemaERP:
         
         self.tree_transacciones.bind("<Motion>", show_tooltip)
         self.tree_transacciones.bind("<Leave>", hide_tooltip)
-        
-        self.tree_transacciones.pack(fill=tk.BOTH, expand=True, pady=10, padx=10)
-        
-        # Scrollbar
-        scrollbar = ttk.Scrollbar(frame, orient="vertical", command=self.tree_transacciones.yview)
-        self.tree_transacciones.configure(yscrollcommand=scrollbar.set)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         
         # Cargar datos iniciales
         self.cargar_transacciones()
@@ -1909,24 +1936,24 @@ class SistemaERP:
         cursor = conn.cursor()
         
         try:
-            # Consulta optimizada que calcula correctamente el saldo acumulado
+            # Consulta para obtener transacciones
             query = '''
             SELECT 
-                f.id,
-                f.fecha,
-                f.concepto,
-                f.ingreso,
-                f.egreso,
-                f.saldo_actual
-            FROM finanzas f
+                id,
+                fecha,
+                concepto,
+                ingreso,
+                egreso,
+                saldo_actual
+            FROM finanzas
             '''
             
             if filtro == "Ingresos":
-                query += ' WHERE f.ingreso > 0'
+                query += ' WHERE ingreso > 0'
             elif filtro == "Egresos":
-                query += ' WHERE f.egreso > 0'
+                query += ' WHERE egreso > 0'
             
-            query += ' ORDER BY f.id DESC LIMIT 100'
+            query += ' ORDER BY id DESC LIMIT 200'
             
             cursor.execute(query)
             transacciones = cursor.fetchall()
@@ -1935,27 +1962,40 @@ class SistemaERP:
                 # Formatear valores
                 fecha = row[1].split()[0] if ' ' in row[1] else row[1]
                 
-                # Crear diccionario con todos los valores posibles
+                # Formatear montos
+                ingreso = f"${row[3]:,.2f}" if row[3] > 0 else ""
+                egreso = f"${row[4]:,.2f}" if row[4] > 0 else ""
+                saldo = f"${row[5]:,.2f}" if row[5] is not None else "$0.00"
+                
                 valores = (
                     row[0],  # ID
                     fecha,   # Fecha
                     row[2],  # Concepto
-                    f"${row[3]:,.2f}" if row[3] > 0 else "",  # Ingreso
-                    f"${row[4]:,.2f}" if row[4] > 0 else "",  # Egreso
-                    f"${row[5]:,.2f}" if row[5] is not None else "$0.00"  # Saldo
+                    ingreso,
+                    egreso,
+                    saldo
                 )
                 
                 # Determinar estilo de fila
                 tags = ('ingreso',) if row[3] > 0 else ('egreso',) if row[4] > 0 else ()
                 
-                # Insertar fila con todos los valores (el Treeview mostrará solo las columnas visibles)
                 self.tree_transacciones.insert("", tk.END, values=valores, tags=tags)
+                
+            # Ajustar automáticamente el ancho de la columna Concepto
+            self.ajustar_ancho_columnas()
                 
         except Exception as e:
             messagebox.showerror("Error", f"Error al cargar transacciones: {str(e)}")
         finally:
             conn.close()
 
+    def ajustar_ancho_columnas(self):
+        # Ajustar dinámicamente el ancho de la columna Concepto
+        ancho_total = self.tree_transacciones.winfo_width()
+        if ancho_total > 1:  # Solo si el treeview tiene un ancho asignado
+            ancho_fijo = 50 + 120 + 100 + 100 + 120 + 20  # Suma de anchos fijos + margen
+            ancho_concepto = max(200, ancho_total - ancho_fijo)
+            self.tree_transacciones.column("Concepto", width=ancho_concepto)
     
     def generar_informe_finanzas(self):
         # Limpiar frame de resultados
