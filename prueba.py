@@ -2377,8 +2377,6 @@ class SistemaERP:
             widget.destroy()
 
     # ==================== MÓDULO DE INVENTARIO ====================
-# ==================== MÓDULO DE INVENTARIO ====================
-# ==================== MÓDULO DE INVENTARIO ====================
     def mostrar_modulo_inventario(self):
         """Muestra la interfaz principal del módulo de inventario"""
         self.limpiar_ventana()
@@ -2477,9 +2475,8 @@ class SistemaERP:
         self.fecha_salida_hasta.pack(side=tk.LEFT, padx=5)
         self.fecha_salida_hasta.set_date(datetime.datetime.now())
         
-        # Botones
+        # Botones (se eliminó el botón de refrescar)
         tk.Button(filtros_frame, text="Aplicar Filtros", command=self.filtrar_salidas).pack(side=tk.LEFT, padx=5)
-        tk.Button(filtros_frame, text="Refrescar", command=self.cargar_salidas).pack(side=tk.LEFT, padx=5)
         
         # Tabla de salidas
         columns = ("ID", "Fecha", "Tipo Producto", "Descripción", "Cantidad", "Destino", "Responsable", "Notas")
@@ -2634,9 +2631,8 @@ class SistemaERP:
         self.filtro_proveedor = ttk.Combobox(filtros_frame, width=15, state="readonly")
         self.filtro_proveedor.pack(side=tk.LEFT, padx=5)
         
-        # Botones
+        # Botones (se eliminó el botón de refrescar)
         tk.Button(filtros_frame, text="Aplicar Filtros", command=self.filtrar_inventario).pack(side=tk.LEFT, padx=5)
-        tk.Button(filtros_frame, text="Refrescar", command=self.cargar_inventario).pack(side=tk.LEFT, padx=5)
         tk.Button(filtros_frame, text="Registrar Salida", command=self.mostrar_formulario_salida).pack(side=tk.LEFT, padx=5)
         
         # Frame para resumen de inventario
@@ -2927,6 +2923,7 @@ class SistemaERP:
         finally:
             conn.close()
 
+
     def mostrar_formulario_salida(self):
         """Muestra formulario para registrar salida de inventario"""
         # Verificar si hay un item seleccionado
@@ -3051,7 +3048,12 @@ class SistemaERP:
             conn.commit()
             messagebox.showinfo("Éxito", "Salida registrada correctamente")
             popup.destroy()
-            self.cargar_inventario()  # Recargar inventario para reflejar el cambio
+            
+            # Actualizar todas las vistas afectadas
+            self.cargar_inventario()
+            self.cargar_movimientos()
+            self.cargar_salidas()
+            
         except Exception as e:
             conn.rollback()
             messagebox.showerror("Error", f"Error al registrar salida: {str(e)}")
@@ -3090,9 +3092,8 @@ class SistemaERP:
         self.fecha_hasta.pack(side=tk.LEFT, padx=5)
         self.fecha_hasta.set_date(datetime.datetime.now())
         
-        # Botones
+        # Botones (se eliminó el botón de refrescar)
         tk.Button(filtros_frame, text="Aplicar Filtros", command=self.filtrar_movimientos).pack(side=tk.LEFT, padx=5)
-        tk.Button(filtros_frame, text="Refrescar", command=self.cargar_movimientos).pack(side=tk.LEFT, padx=5)
         
         # Cargar tipos de producto para el filtro
         self.cargar_tipos_para_movimientos()
