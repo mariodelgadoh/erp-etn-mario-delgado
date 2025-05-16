@@ -1474,7 +1474,7 @@ class SistemaERP:
         caracteres = string.ascii_letters + string.digits + "!@#$%^&*"
         return ''.join(random.choice(caracteres) for i in range(10))
     
-# Modulo finanzas 
+# ==================== MÓDULO DE FINANZAS ====================
     
     def mostrar_modulo_finanzas(self):
         # Limpiar ventana
@@ -1917,9 +1917,7 @@ class SistemaERP:
                 f.concepto,
                 f.ingreso,
                 f.egreso,
-                (SELECT SUM(ingreso) - SUM(egreso) 
-                FROM finanzas 
-                WHERE id <= f.id) as saldo_actual
+                f.saldo_actual
             FROM finanzas f
             '''
             
@@ -1936,22 +1934,22 @@ class SistemaERP:
             for row in transacciones:
                 # Formatear valores
                 fecha = row[1].split()[0] if ' ' in row[1] else row[1]
-                valores = {
-                    "ID": row[0],
-                    "Fecha": fecha,
-                    "Concepto": row[2],
-                    "Ingreso": f"${row[3]:,.2f}" if row[3] > 0 else "",
-                    "Egreso": f"${row[4]:,.2f}" if row[4] > 0 else "",
-                    "Saldo": f"${abs(row[5]):,.2f}" if row[5] is not None else "$0.00"
-                }
                 
-                # Ordenar valores según columnas visibles
-                valores_ordenados = [valores[col] for col in visible_columns]
+                # Crear diccionario con todos los valores posibles
+                valores = (
+                    row[0],  # ID
+                    fecha,   # Fecha
+                    row[2],  # Concepto
+                    f"${row[3]:,.2f}" if row[3] > 0 else "",  # Ingreso
+                    f"${row[4]:,.2f}" if row[4] > 0 else "",  # Egreso
+                    f"${row[5]:,.2f}" if row[5] is not None else "$0.00"  # Saldo
+                )
                 
                 # Determinar estilo de fila
                 tags = ('ingreso',) if row[3] > 0 else ('egreso',) if row[4] > 0 else ()
                 
-                self.tree_transacciones.insert("", tk.END, values=valores_ordenados, tags=tags)
+                # Insertar fila con todos los valores (el Treeview mostrará solo las columnas visibles)
+                self.tree_transacciones.insert("", tk.END, values=valores, tags=tags)
                 
         except Exception as e:
             messagebox.showerror("Error", f"Error al cargar transacciones: {str(e)}")
