@@ -2377,6 +2377,8 @@ class SistemaERP:
             widget.destroy()
 
     # ==================== MÓDULO DE INVENTARIO ====================
+# ==================== MÓDULO DE INVENTARIO ====================
+# ==================== MÓDULO DE INVENTARIO ====================
     def mostrar_modulo_inventario(self):
         """Muestra la interfaz principal del módulo de inventario"""
         self.limpiar_ventana()
@@ -2393,256 +2395,900 @@ class SistemaERP:
         # Pestañas
         tab_control = ttk.Notebook(main_frame)
         
-        # Pestaña Autobuses
-        tab_autobuses = ttk.Frame(tab_control)
-        tab_control.add(tab_autobuses, text="Autobuses")
-        self.setup_tab_autobuses(tab_autobuses)
+        # Pestaña Inventario General
+        tab_inventario = ttk.Frame(tab_control)
+        tab_control.add(tab_inventario, text="Inventario General")
+        self.setup_tab_inventario(tab_inventario)
         
-        # Pestaña Computadoras
-        tab_computadoras = ttk.Frame(tab_control)
-        tab_control.add(tab_computadoras, text="Computadoras")
-        self.setup_tab_computadoras(tab_computadoras)
+        # Pestaña de Entradas/Salidas
+        tab_movimientos = ttk.Frame(tab_control)
+        tab_control.add(tab_movimientos, text="Historial de Compras")
+        self.setup_tab_movimientos(tab_movimientos)
+        
+        # Pestaña de Salidas
+        tab_salidas = ttk.Frame(tab_control)
+        tab_control.add(tab_salidas, text="Historial de Salidas")
+        self.setup_tab_salidas(tab_salidas)
         
         tab_control.pack(expand=1, fill="both")
-
-    # ------ Autobuses ------
-    def setup_tab_autobuses(self, parent):
-        """Configura la pestaña de autobuses"""
-        frame = tk.Frame(parent)
-        frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
         
-        # Controles
-        controls_frame = tk.Frame(frame)
-        controls_frame.pack(fill=tk.X, pady=10)
-        tk.Button(controls_frame, text="Agregar Autobús", command=self.mostrar_formulario_autobus).pack(side=tk.LEFT, padx=5)
-        tk.Button(controls_frame, text="Refrescar", command=self.cargar_autobuses).pack(side=tk.LEFT, padx=5)
-        
-        # Tabla
-        columns = ("ID", "Marca", "Modelo", "Año", "Capacidad", "Estado")
-        self.tree_autobuses = ttk.Treeview(frame, columns=columns, show="headings")
-        for col in columns:
-            self.tree_autobuses.heading(col, text=col)
-            self.tree_autobuses.column(col, width=100)
-        
-        scrollbar = ttk.Scrollbar(frame, orient="vertical", command=self.tree_autobuses.yview)
-        self.tree_autobuses.configure(yscrollcommand=scrollbar.set)
-        
-        self.tree_autobuses.pack(fill=tk.BOTH, expand=True, pady=10)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        
-        self.cargar_autobuses()
-
-    def mostrar_formulario_autobus(self):
-        """Muestra el formulario para agregar un nuevo autobús"""
-        popup = tk.Toplevel(self.root)
-        popup.title("Agregar Autobús")
-        popup.geometry("400x300")
-        
-        frame = tk.Frame(popup)
-        frame.pack(padx=20, pady=20)
-        
-        # Campos del formulario
-        tk.Label(frame, text="Marca:").grid(row=0, column=0, sticky="w", pady=5)
-        marca_entry = tk.Entry(frame, width=30)
-        marca_entry.grid(row=0, column=1, pady=5)
-        
-        tk.Label(frame, text="Modelo:").grid(row=1, column=0, sticky="w", pady=5)
-        modelo_entry = tk.Entry(frame, width=30)
-        modelo_entry.grid(row=1, column=1, pady=5)
-        
-        tk.Label(frame, text="Año:").grid(row=2, column=0, sticky="w", pady=5)
-        año_entry = tk.Entry(frame, width=30)
-        año_entry.grid(row=2, column=1, pady=5)
-        
-        tk.Label(frame, text="Capacidad:").grid(row=3, column=0, sticky="w", pady=5)
-        capacidad_entry = tk.Entry(frame, width=30)
-        capacidad_entry.grid(row=3, column=1, pady=5)
-        capacidad_entry.insert(0, "24")
-        
-        tk.Label(frame, text="Estado:").grid(row=4, column=0, sticky="w", pady=5)
-        estado_combobox = ttk.Combobox(frame, values=["Nuevo", "Usado", "Mantenimiento", "Inactivo"], width=27)
-        estado_combobox.grid(row=4, column=1, pady=5)
-        estado_combobox.set("Nuevo")
-        
-        # Botón guardar
-        tk.Button(frame, text="Guardar", command=lambda: self.guardar_autobus(
-            marca_entry.get(),
-            modelo_entry.get(),
-            año_entry.get(),
-            capacidad_entry.get(),
-            estado_combobox.get(),
-            popup
-        )).grid(row=5, columnspan=2, pady=20)
-
-    def guardar_autobus(self, marca, modelo, año, capacidad, estado, popup):
-        """Guarda un nuevo autobús en la base de datos"""
-        if not all([marca, modelo, año, capacidad, estado]):
-            messagebox.showwarning("Advertencia", "Todos los campos son obligatorios")
-            return
-        
-        try:
-            año_int = int(año)
-            capacidad_int = int(capacidad)
-        except ValueError:
-            messagebox.showerror("Error", "Año y capacidad deben ser números")
-            return
-        
+        # Al iniciar, asegurarse de que la tabla de inventario esté creada y poblada
         conn = sqlite3.connect('erp_autobuses.db')
         try:
             cursor = conn.cursor()
+            
+            # Crear tabla de salidas si no existe
             cursor.execute("""
-                INSERT INTO autobuses (marca, modelo, año, capacidad, estado)
-                VALUES (?, ?, ?, ?, ?)
-            """, (marca, modelo, año_int, capacidad_int, estado))
-            
-            # Registrar transacción financiera
-            fecha = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            concepto = f"Compra de autobús {marca} {modelo}"
-            precio = 2500000 if marca.lower() == "volvo" else 2000000
-            
-            cursor.execute("SELECT saldo_actual FROM finanzas ORDER BY id DESC LIMIT 1")
-            saldo_actual = cursor.fetchone()[0]
-            
-            cursor.execute("""
-                INSERT INTO finanzas (fecha, concepto, ingreso, egreso, saldo_actual)
-                VALUES (?, ?, ?, ?, ?)
-            """, (fecha, concepto, 0, precio, saldo_actual - precio))
-            
-            conn.commit()
-            messagebox.showinfo("Éxito", "Autobús agregado correctamente")
-            popup.destroy()
-            self.cargar_autobuses()
-        except Exception as e:
-            conn.rollback()
-            messagebox.showerror("Error", f"Error al guardar autobús: {str(e)}")
-        finally:
-            conn.close()
-
-    def cargar_autobuses(self):
-        """Carga los autobuses desde la base de datos al TreeView"""
-        for item in self.tree_autobuses.get_children():
-            self.tree_autobuses.delete(item)
-        
-        conn = sqlite3.connect('erp_autobuses.db')
-        try:
-            cursor = conn.cursor()
-            cursor.execute("SELECT id, marca, modelo, año, capacidad, estado FROM autobuses ORDER BY id")
-            for row in cursor.fetchall():
-                self.tree_autobuses.insert("", tk.END, values=row)
-        except Exception as e:
-            messagebox.showerror("Error", f"Error al cargar autobuses: {str(e)}")
-        finally:
-            conn.close()
-
-    # ------ Computadoras ------
-    def setup_tab_computadoras(self, parent):
-        """Configura la pestaña de computadoras"""
-        frame = tk.Frame(parent)
-        frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
-        
-        # Controles
-        controls_frame = tk.Frame(frame)
-        controls_frame.pack(fill=tk.X, pady=10)
-        tk.Button(controls_frame, text="Agregar Computadora", command=self.mostrar_formulario_computadora).pack(side=tk.LEFT, padx=5)
-        tk.Button(controls_frame, text="Refrescar", command=self.cargar_computadoras).pack(side=tk.LEFT, padx=5)
-        
-        # Tabla
-        columns = ("ID", "Marca", "Modelo", "Asignado a", "Departamento", "Estado")
-        self.tree_computadoras = ttk.Treeview(frame, columns=columns, show="headings")
-        for col in columns:
-            self.tree_computadoras.heading(col, text=col)
-            self.tree_computadoras.column(col, width=120)
-        
-        scrollbar = ttk.Scrollbar(frame, orient="vertical", command=self.tree_computadoras.yview)
-        self.tree_computadoras.configure(yscrollcommand=scrollbar.set)
-        
-        self.tree_computadoras.pack(fill=tk.BOTH, expand=True, pady=10)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        
-        self.cargar_computadoras()
-
-    def mostrar_formulario_computadora(self):
-        """Muestra el formulario para agregar una nueva computadora"""
-        popup = tk.Toplevel(self.root)
-        popup.title("Agregar Computadora")
-        popup.geometry("400x300")
-        
-        frame = tk.Frame(popup)
-        frame.pack(padx=20, pady=20)
-        
-        # Campos del formulario
-        tk.Label(frame, text="Marca:").grid(row=0, column=0, sticky="w", pady=5)
-        marca_entry = tk.Entry(frame, width=30)
-        marca_entry.grid(row=0, column=1, pady=5)
-        
-        tk.Label(frame, text="Modelo:").grid(row=1, column=0, sticky="w", pady=5)
-        modelo_entry = tk.Entry(frame, width=30)
-        modelo_entry.grid(row=1, column=1, pady=5)
-        
-        tk.Label(frame, text="Asignado a:").grid(row=2, column=0, sticky="w", pady=5)
-        asignado_entry = tk.Entry(frame, width=30)
-        asignado_entry.grid(row=2, column=1, pady=5)
-        
-        tk.Label(frame, text="Departamento:").grid(row=3, column=0, sticky="w", pady=5)
-        depto_entry = tk.Entry(frame, width=30)
-        depto_entry.grid(row=3, column=1, pady=5)
-        
-        tk.Label(frame, text="Estado:").grid(row=4, column=0, sticky="w", pady=5)
-        estado_combobox = ttk.Combobox(frame, values=["Nuevo", "Usado", "Mantenimiento", "Inactivo"], width=27)
-        estado_combobox.grid(row=4, column=1, pady=5)
-        estado_combobox.set("Nuevo")
-        
-        # Botón guardar
-        tk.Button(frame, text="Guardar", command=lambda: self.guardar_computadora(
-            marca_entry.get(),
-            modelo_entry.get(),
-            asignado_entry.get(),
-            depto_entry.get(),
-            estado_combobox.get(),
-            popup
-        )).grid(row=5, columnspan=2, pady=20)
-
-    def guardar_computadora(self, marca, modelo, asignado_a, departamento, estado, popup):
-        """Guarda una nueva computadora en la base de datos"""
-        if not all([marca, modelo, estado]):
-            messagebox.showwarning("Advertencia", "Marca, modelo y estado son obligatorios")
-            return
-        
-        conn = sqlite3.connect('erp_autobuses.db')
-        try:
-            cursor = conn.cursor()
-            cursor.execute("""
-                INSERT INTO computadoras (marca, modelo, asignado_a, departamento, estado)
-                VALUES (?, ?, ?, ?, ?)
-            """, (marca, modelo, asignado_a, departamento, estado))
-            
-            conn.commit()
-            messagebox.showinfo("Éxito", "Computadora agregada correctamente")
-            popup.destroy()
-            self.cargar_computadoras()
-        except Exception as e:
-            conn.rollback()
-            messagebox.showerror("Error", f"Error al guardar computadora: {str(e)}")
-        finally:
-            conn.close()
-
-    def cargar_computadoras(self):
-        """Carga las computadoras desde la base de datos al TreeView"""
-        for item in self.tree_computadoras.get_children():
-            self.tree_computadoras.delete(item)
-        
-        conn = sqlite3.connect('erp_autobuses.db')
-        try:
-            cursor = conn.cursor()
-            cursor.execute("""
-                SELECT id, marca, modelo, asignado_a, departamento, estado
-                FROM computadoras
-                ORDER BY id
+                CREATE TABLE IF NOT EXISTS salidas_inventario (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    producto_id INTEGER,
+                    fecha TEXT,
+                    tipo_producto TEXT,
+                    descripcion TEXT,
+                    cantidad INTEGER,
+                    destino TEXT,
+                    responsable TEXT,
+                    notas TEXT,
+                    FOREIGN KEY(producto_id) REFERENCES compras(id)
+                )
             """)
-            for row in cursor.fetchall():
-                self.tree_computadoras.insert("", tk.END, values=row)
+            
+            # Crear tabla de inventario si no existe
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS inventario (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    producto_id INTEGER,
+                    tipo_producto TEXT,
+                    descripcion TEXT,
+                    cantidad INTEGER,
+                    fecha_actualizacion TEXT,
+                    FOREIGN KEY(producto_id) REFERENCES compras(id)
+                )
+            """)
+            
+            conn.commit()
         except Exception as e:
-            messagebox.showerror("Error", f"Error al cargar computadoras: {str(e)}")
+            messagebox.showerror("Error", f"Error al inicializar tablas: {str(e)}")
+        finally:
+            conn.close()
+
+    def setup_tab_salidas(self, parent):
+        """Configura la pestaña de historial de salidas"""
+        frame = tk.Frame(parent)
+        frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+        
+        # Frame de filtros
+        filtros_frame = tk.Frame(frame)
+        filtros_frame.pack(fill=tk.X, pady=10)
+        
+        # Filtro por tipo de producto
+        tk.Label(filtros_frame, text="Tipo Producto:").pack(side=tk.LEFT, padx=5)
+        self.filtro_salida_tipo = ttk.Combobox(filtros_frame, width=15, state="readonly")
+        self.filtro_salida_tipo.pack(side=tk.LEFT, padx=5)
+        
+        # Filtro por fecha
+        tk.Label(filtros_frame, text="Desde:").pack(side=tk.LEFT, padx=5)
+        self.fecha_salida_desde = DateEntry(filtros_frame, width=12, background='darkblue', foreground='white', borderwidth=2)
+        self.fecha_salida_desde.pack(side=tk.LEFT, padx=5)
+        self.fecha_salida_desde.set_date(datetime.datetime.now() - datetime.timedelta(days=30))
+        
+        tk.Label(filtros_frame, text="Hasta:").pack(side=tk.LEFT, padx=5)
+        self.fecha_salida_hasta = DateEntry(filtros_frame, width=12, background='darkblue', foreground='white', borderwidth=2)
+        self.fecha_salida_hasta.pack(side=tk.LEFT, padx=5)
+        self.fecha_salida_hasta.set_date(datetime.datetime.now())
+        
+        # Botones
+        tk.Button(filtros_frame, text="Aplicar Filtros", command=self.filtrar_salidas).pack(side=tk.LEFT, padx=5)
+        tk.Button(filtros_frame, text="Refrescar", command=self.cargar_salidas).pack(side=tk.LEFT, padx=5)
+        
+        # Tabla de salidas
+        columns = ("ID", "Fecha", "Tipo Producto", "Descripción", "Cantidad", "Destino", "Responsable", "Notas")
+        self.tree_salidas = ttk.Treeview(frame, columns=columns, show="headings")
+        
+        for col in columns:
+            self.tree_salidas.heading(col, text=col)
+            width = 80 if col == "ID" else 120 if col not in ["Descripción", "Destino", "Notas"] else 180
+            self.tree_salidas.column(col, width=width)
+        
+        scrollbar = ttk.Scrollbar(frame, orient="vertical", command=self.tree_salidas.yview)
+        self.tree_salidas.configure(yscrollcommand=scrollbar.set)
+        
+        self.tree_salidas.pack(fill=tk.BOTH, expand=True, pady=10)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        # Cargar tipos de producto para el filtro
+        self.cargar_tipos_para_salidas()
+        
+        # Cargar datos iniciales
+        self.cargar_salidas()
+
+    def cargar_tipos_para_salidas(self):
+        """Carga los tipos de producto para el filtro en salidas"""
+        conn = sqlite3.connect('erp_autobuses.db')
+        try:
+            cursor = conn.cursor()
+            
+            # Verificar si existe la tabla de salidas_inventario
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='salidas_inventario'")
+            existe_tabla = cursor.fetchone() is not None
+            
+            if existe_tabla:
+                # Si existe la tabla, obtener los tipos de producto
+                cursor.execute("SELECT DISTINCT tipo_producto FROM salidas_inventario ORDER BY tipo_producto")
+                tipos = ["Todos"] + [row[0] for row in cursor.fetchall()]
+                self.filtro_salida_tipo['values'] = tipos
+                self.filtro_salida_tipo.set("Todos")
+            else:
+                self.filtro_salida_tipo['values'] = ["Todos"]
+                self.filtro_salida_tipo.set("Todos")
+        except Exception as e:
+            messagebox.showerror("Error", f"Error al cargar tipos de producto para salidas: {str(e)}")
+        finally:
+            conn.close()
+
+    def cargar_salidas(self):
+        """Carga el historial de salidas de inventario"""
+        for item in self.tree_salidas.get_children():
+            self.tree_salidas.delete(item)
+        
+        conn = sqlite3.connect('erp_autobuses.db')
+        try:
+            cursor = conn.cursor()
+            
+            # Verificar si existe la tabla de salidas_inventario
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='salidas_inventario'")
+            existe_tabla = cursor.fetchone() is not None
+            
+            if existe_tabla:
+                # Cargar salidas
+                cursor.execute("""
+                    SELECT 
+                        id,
+                        fecha,
+                        tipo_producto,
+                        descripcion,
+                        cantidad,
+                        destino,
+                        responsable,
+                        notas
+                    FROM salidas_inventario
+                    ORDER BY fecha DESC
+                """)
+                
+                for row in cursor.fetchall():
+                    self.tree_salidas.insert("", tk.END, values=row)
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Error al cargar salidas: {str(e)}")
+        finally:
+            conn.close()
+
+    def filtrar_salidas(self):
+        """Filtra las salidas por tipo y fecha"""
+        tipo_producto = self.filtro_salida_tipo.get()
+        desde = self.fecha_salida_desde.get_date().strftime("%Y-%m-%d")
+        hasta = self.fecha_salida_hasta.get_date().strftime("%Y-%m-%d")
+        
+        for item in self.tree_salidas.get_children():
+            self.tree_salidas.delete(item)
+        
+        conn = sqlite3.connect('erp_autobuses.db')
+        try:
+            cursor = conn.cursor()
+            
+            # Verificar si existe la tabla de salidas_inventario
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='salidas_inventario'")
+            existe_tabla = cursor.fetchone() is not None
+            
+            if existe_tabla:
+                # Consultar salidas con filtros
+                query = """
+                    SELECT 
+                        id,
+                        fecha,
+                        tipo_producto,
+                        descripcion,
+                        cantidad,
+                        destino,
+                        responsable,
+                        notas
+                    FROM salidas_inventario
+                    WHERE fecha BETWEEN ? AND ?
+                """
+                
+                params = [desde, hasta + " 23:59:59"]
+                
+                if tipo_producto != "Todos":
+                    query += " AND tipo_producto = ?"
+                    params.append(tipo_producto)
+                
+                query += " ORDER BY fecha DESC"
+                
+                cursor.execute(query, params)
+                
+                for row in cursor.fetchall():
+                    self.tree_salidas.insert("", tk.END, values=row)
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Error al filtrar salidas: {str(e)}")
+        finally:
+            conn.close()
+
+    # ------ Inventario General ------
+    def setup_tab_inventario(self, parent):
+        """Configura la pestaña de inventario general"""
+        frame = tk.Frame(parent)
+        frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+        
+        # Frame de filtros y controles
+        filtros_frame = tk.Frame(frame)
+        filtros_frame.pack(fill=tk.X, pady=10)
+        
+        # Filtros
+        tk.Label(filtros_frame, text="Tipo de producto:").pack(side=tk.LEFT, padx=5)
+        self.filtro_tipo = ttk.Combobox(filtros_frame, width=15, state="readonly")
+        self.filtro_tipo.pack(side=tk.LEFT, padx=5)
+        self.filtro_tipo.bind("<<ComboboxSelected>>", self.actualizar_proveedores_por_tipo)
+        
+        tk.Label(filtros_frame, text="Proveedor:").pack(side=tk.LEFT, padx=5)
+        self.filtro_proveedor = ttk.Combobox(filtros_frame, width=15, state="readonly")
+        self.filtro_proveedor.pack(side=tk.LEFT, padx=5)
+        
+        # Botones
+        tk.Button(filtros_frame, text="Aplicar Filtros", command=self.filtrar_inventario).pack(side=tk.LEFT, padx=5)
+        tk.Button(filtros_frame, text="Refrescar", command=self.cargar_inventario).pack(side=tk.LEFT, padx=5)
+        tk.Button(filtros_frame, text="Registrar Salida", command=self.mostrar_formulario_salida).pack(side=tk.LEFT, padx=5)
+        
+        # Frame para resumen de inventario
+        resumen_frame = tk.Frame(frame)
+        resumen_frame.pack(fill=tk.X, pady=5)
+        self.label_resumen = tk.Label(resumen_frame, text="Total de productos: 0 | Cantidad total: 0 | Valor total: $0.00", font=("Arial", 10, "bold"))
+        self.label_resumen.pack(side=tk.LEFT)
+        
+        # Tabla de inventario
+        columns = ("ID", "Tipo", "Descripción", "Cantidad", "Precio Unitario", "Valor Total", "Último Movimiento", "Proveedor")
+        self.tree_inventario = ttk.Treeview(frame, columns=columns, show="headings")
+        
+        for col in columns:
+            self.tree_inventario.heading(col, text=col)
+            width = 100 if col not in ["Descripción", "Proveedor"] else 150
+            self.tree_inventario.column(col, width=width)
+        
+        scrollbar = ttk.Scrollbar(frame, orient="vertical", command=self.tree_inventario.yview)
+        self.tree_inventario.configure(yscrollcommand=scrollbar.set)
+        
+        self.tree_inventario.pack(fill=tk.BOTH, expand=True, pady=10)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        # Cargar datos iniciales
+        self.cargar_tipos_y_proveedores()
+        self.cargar_inventario()
+
+    def cargar_tipos_y_proveedores(self):
+        """Carga los tipos de productos y proveedores para los filtros"""
+        conn = sqlite3.connect('erp_autobuses.db')
+        try:
+            cursor = conn.cursor()
+            
+            # Cargar tipos de productos
+            cursor.execute("SELECT DISTINCT tipo_producto FROM compras ORDER BY tipo_producto")
+            tipos = ["Todos"] + [row[0] for row in cursor.fetchall()]
+            self.filtro_tipo['values'] = tipos
+            self.filtro_tipo.set("Todos")
+            
+            # Cargar todos los proveedores inicialmente
+            cursor.execute("SELECT DISTINCT nombre FROM proveedores ORDER BY nombre")
+            proveedores = ["Todos"] + [row[0] for row in cursor.fetchall()]
+            self.filtro_proveedor['values'] = proveedores
+            self.filtro_proveedor.set("Todos")
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Error al cargar filtros: {str(e)}")
+        finally:
+            conn.close()
+
+    def actualizar_proveedores_por_tipo(self, event=None):
+        """Actualiza la lista de proveedores según el tipo de producto seleccionado"""
+        tipo_seleccionado = self.filtro_tipo.get()
+        
+        if tipo_seleccionado == "Todos":
+            # Mostrar todos los proveedores
+            conn = sqlite3.connect('erp_autobuses.db')
+            try:
+                cursor = conn.cursor()
+                cursor.execute("SELECT DISTINCT nombre FROM proveedores ORDER BY nombre")
+                proveedores = ["Todos"] + [row[0] for row in cursor.fetchall()]
+                self.filtro_proveedor['values'] = proveedores
+                self.filtro_proveedor.set("Todos")
+            except Exception as e:
+                messagebox.showerror("Error", f"Error al cargar proveedores: {str(e)}")
+            finally:
+                conn.close()
+        else:
+            # Mostrar solo proveedores que suministran ese tipo de producto
+            conn = sqlite3.connect('erp_autobuses.db')
+            try:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    SELECT DISTINCT p.nombre 
+                    FROM proveedores p
+                    JOIN compras c ON p.id = c.proveedor_id
+                    WHERE c.tipo_producto = ?
+                    ORDER BY p.nombre
+                """, (tipo_seleccionado,))
+                
+                proveedores = ["Todos"] + [row[0] for row in cursor.fetchall()]
+                self.filtro_proveedor['values'] = proveedores
+                self.filtro_proveedor.set("Todos")
+            except Exception as e:
+                messagebox.showerror("Error", f"Error al cargar proveedores: {str(e)}")
+            finally:
+                conn.close()
+
+
+    def cargar_inventario(self):
+        """Carga el inventario considerando tanto compras como salidas"""
+        for item in self.tree_inventario.get_children():
+            self.tree_inventario.delete(item)
+        
+        conn = sqlite3.connect('erp_autobuses.db')
+        try:
+            cursor = conn.cursor()
+            
+            # Verificar si existen las tablas necesarias
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='salidas_inventario'")
+            existe_tabla_salidas = cursor.fetchone() is not None
+            
+            # Crear tabla de salidas_inventario si no existe
+            if not existe_tabla_salidas:
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS salidas_inventario (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        producto_id INTEGER,
+                        fecha TEXT,
+                        tipo_producto TEXT,
+                        descripcion TEXT,
+                        cantidad INTEGER,
+                        destino TEXT,
+                        responsable TEXT,
+                        notas TEXT,
+                        FOREIGN KEY(producto_id) REFERENCES compras(id)
+                    )
+                """)
+                conn.commit()
+            
+            # Calcular el inventario real (compras - salidas)
+            query = """
+            WITH total_compras AS (
+                SELECT 
+                    MIN(c.id) as id,
+                    c.tipo_producto,
+                    c.descripcion,
+                    SUM(c.cantidad) as cantidad_comprada,
+                    AVG(c.precio_unitario) as precio_promedio,
+                    MAX(c.fecha) as ultimo_movimiento,
+                    p.nombre as proveedor,
+                    p.id as proveedor_id
+                FROM compras c
+                JOIN proveedores p ON c.proveedor_id = p.id
+                GROUP BY c.tipo_producto, c.descripcion
+            ),
+            total_salidas AS (
+                SELECT 
+                    s.tipo_producto,
+                    s.descripcion,
+                    SUM(s.cantidad) as cantidad_salida
+                FROM salidas_inventario s
+                GROUP BY s.tipo_producto, s.descripcion
+            )
+            SELECT 
+                c.id,
+                c.tipo_producto,
+                c.descripcion,
+                c.cantidad_comprada - COALESCE(s.cantidad_salida, 0) as cantidad_disponible,
+                c.precio_promedio,
+                c.ultimo_movimiento,
+                c.proveedor,
+                c.proveedor_id
+            FROM total_compras c
+            LEFT JOIN total_salidas s ON c.tipo_producto = s.tipo_producto AND c.descripcion = s.descripcion
+            WHERE c.cantidad_comprada - COALESCE(s.cantidad_salida, 0) > 0
+            ORDER BY c.tipo_producto, c.descripcion
+            """
+            
+            cursor.execute(query)
+            
+            total_productos = 0
+            total_cantidad = 0
+            total_valor = 0.0
+            
+            for row in cursor.fetchall():
+                id_producto, tipo, descripcion, cantidad, precio_unitario, fecha, proveedor, _ = row
+                valor_total = cantidad * precio_unitario
+                
+                self.tree_inventario.insert("", tk.END, values=(
+                    id_producto,
+                    tipo,
+                    descripcion,
+                    cantidad,
+                    f"${precio_unitario:.2f}",
+                    f"${valor_total:.2f}",
+                    fecha,
+                    proveedor
+                ))
+                
+                total_productos += 1
+                total_cantidad += cantidad
+                total_valor += valor_total
+            
+            # Actualizar resumen
+            self.label_resumen.config(text=f"Total de productos: {total_productos} | Cantidad total: {total_cantidad} | Valor total: ${total_valor:.2f}")
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Error al cargar inventario: {str(e)}")
+        finally:
+            conn.close()
+
+    def filtrar_inventario(self):
+        """Aplica los filtros seleccionados al inventario"""
+        tipo_filtro = self.filtro_tipo.get()
+        proveedor_filtro = self.filtro_proveedor.get()
+        
+        for item in self.tree_inventario.get_children():
+            self.tree_inventario.delete(item)
+        
+        conn = sqlite3.connect('erp_autobuses.db')
+        try:
+            cursor = conn.cursor()
+            
+            # Calcular el inventario considerando compras y salidas con filtros
+            query = """
+            WITH total_compras AS (
+                SELECT 
+                    MIN(c.id) as id,
+                    c.tipo_producto,
+                    c.descripcion,
+                    SUM(c.cantidad) as cantidad_comprada,
+                    AVG(c.precio_unitario) as precio_promedio,
+                    MAX(c.fecha) as ultimo_movimiento,
+                    p.nombre as proveedor,
+                    p.id as proveedor_id
+                FROM compras c
+                JOIN proveedores p ON c.proveedor_id = p.id
+                WHERE 1=1
+            """
+            
+            params = []
+            
+            if tipo_filtro != "Todos":
+                query += " AND c.tipo_producto = ?"
+                params.append(tipo_filtro)
+            
+            if proveedor_filtro != "Todos":
+                query += " AND p.nombre = ?"
+                params.append(proveedor_filtro)
+            
+            query += """
+                GROUP BY c.tipo_producto, c.descripcion
+            ),
+            total_salidas AS (
+                SELECT 
+                    s.tipo_producto,
+                    s.descripcion,
+                    SUM(s.cantidad) as cantidad_salida
+                FROM salidas_inventario s
+                GROUP BY s.tipo_producto, s.descripcion
+            )
+            SELECT 
+                c.id,
+                c.tipo_producto,
+                c.descripcion,
+                c.cantidad_comprada - COALESCE(s.cantidad_salida, 0) as cantidad_disponible,
+                c.precio_promedio,
+                c.ultimo_movimiento,
+                c.proveedor,
+                c.proveedor_id
+            FROM total_compras c
+            LEFT JOIN total_salidas s ON c.tipo_producto = s.tipo_producto AND c.descripcion = s.descripcion
+            WHERE c.cantidad_comprada - COALESCE(s.cantidad_salida, 0) > 0
+            ORDER BY c.tipo_producto, c.descripcion
+            """
+            
+            cursor.execute(query, params)
+            
+            total_productos = 0
+            total_cantidad = 0
+            total_valor = 0.0
+            
+            for row in cursor.fetchall():
+                id_producto, tipo, descripcion, cantidad, precio_unitario, fecha, proveedor, _ = row
+                valor_total = cantidad * precio_unitario
+                
+                self.tree_inventario.insert("", tk.END, values=(
+                    id_producto,
+                    tipo,
+                    descripcion,
+                    cantidad,
+                    f"${precio_unitario:.2f}",
+                    f"${valor_total:.2f}",
+                    fecha,
+                    proveedor
+                ))
+                
+                total_productos += 1
+                total_cantidad += cantidad
+                total_valor += valor_total
+            
+            # Actualizar resumen
+            self.label_resumen.config(text=f"Total de productos: {total_productos} | Cantidad total: {total_cantidad} | Valor total: ${total_valor:.2f}")
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Error al filtrar inventario: {str(e)}")
+        finally:
+            conn.close()
+
+    def mostrar_formulario_salida(self):
+        """Muestra formulario para registrar salida de inventario"""
+        # Verificar si hay un item seleccionado
+        seleccion = self.tree_inventario.selection()
+        if not seleccion:
+            messagebox.showwarning("Advertencia", "Por favor seleccione un producto para registrar salida")
+            return
+        
+        item = self.tree_inventario.item(seleccion[0])
+        valores = item['values']
+        id_producto = valores[0]
+        tipo_producto = valores[1]
+        descripcion = valores[2]
+        cantidad_disponible = int(valores[3])
+        proveedor = valores[7]
+        
+        # Crear ventana emergente
+        popup = tk.Toplevel(self.root)
+        popup.title("Registrar Salida de Inventario")
+        popup.geometry("450x350")
+        popup.grab_set()  # Hace la ventana modal
+        
+        frame = tk.Frame(popup)
+        frame.pack(padx=20, pady=20, fill=tk.BOTH, expand=True)
+        
+        # Mostrar información del producto
+        tk.Label(frame, text="Registrar Salida de Inventario", font=("Arial", 14, "bold")).grid(row=0, column=0, columnspan=2, sticky="w", pady=5)
+        
+        tk.Label(frame, text="Producto:", font=("Arial", 10, "bold")).grid(row=1, column=0, sticky="w", pady=2)
+        tk.Label(frame, text=f"{tipo_producto} - {descripcion}", font=("Arial", 10)).grid(row=1, column=1, sticky="w", pady=2)
+        
+        tk.Label(frame, text="Proveedor:", font=("Arial", 10, "bold")).grid(row=2, column=0, sticky="w", pady=2)
+        tk.Label(frame, text=proveedor, font=("Arial", 10)).grid(row=2, column=1, sticky="w", pady=2)
+        
+        tk.Label(frame, text="Disponible:", font=("Arial", 10, "bold")).grid(row=3, column=0, sticky="w", pady=2)
+        tk.Label(frame, text=str(cantidad_disponible), font=("Arial", 10)).grid(row=3, column=1, sticky="w", pady=2)
+        
+        # Campos del formulario
+        tk.Label(frame, text="Cantidad a retirar:", font=("Arial", 10)).grid(row=4, column=0, sticky="w", pady=5)
+        cantidad_entry = tk.Entry(frame, width=10, font=("Arial", 10))
+        cantidad_entry.grid(row=4, column=1, sticky="w", pady=5)
+        cantidad_entry.insert(0, "1")
+        
+        tk.Label(frame, text="Destino/Uso:", font=("Arial", 10)).grid(row=5, column=0, sticky="w", pady=5)
+        destino_entry = tk.Entry(frame, width=30, font=("Arial", 10))
+        destino_entry.grid(row=5, column=1, sticky="w", pady=5)
+        
+        tk.Label(frame, text="Responsable:", font=("Arial", 10)).grid(row=6, column=0, sticky="w", pady=5)
+        responsable_entry = tk.Entry(frame, width=30, font=("Arial", 10))
+        responsable_entry.grid(row=6, column=1, sticky="w", pady=5)
+        
+        tk.Label(frame, text="Notas:", font=("Arial", 10)).grid(row=7, column=0, sticky="w", pady=5)
+        notas_entry = tk.Entry(frame, width=30, font=("Arial", 10))
+        notas_entry.grid(row=7, column=1, sticky="w", pady=5)
+        
+        # Frame para botones
+        botones_frame = tk.Frame(frame)
+        botones_frame.grid(row=8, column=0, columnspan=2, pady=15)
+        
+        # Botón guardar
+        tk.Button(botones_frame, text="Registrar Salida", command=lambda: self.registrar_salida_inventario(
+            id_producto,
+            tipo_producto,
+            descripcion,
+            cantidad_entry.get(),
+            destino_entry.get(),
+            responsable_entry.get(),
+            notas_entry.get(),
+            cantidad_disponible,
+            popup
+        )).pack(side=tk.LEFT, padx=5)
+        
+        # Botón cancelar
+        tk.Button(botones_frame, text="Cancelar", command=popup.destroy).pack(side=tk.LEFT, padx=5)
+
+    def registrar_salida_inventario(self, id_producto, tipo_producto, descripcion, cantidad, destino, responsable, notas, cantidad_disponible, popup):
+        """Registra una salida de inventario en la base de datos"""
+        if not all([cantidad, destino, responsable]):
+            messagebox.showwarning("Advertencia", "Los campos Cantidad, Destino y Responsable son obligatorios")
+            return
+        
+        try:
+            cantidad_int = int(cantidad)
+            if cantidad_int <= 0:
+                messagebox.showwarning("Advertencia", "La cantidad debe ser mayor a cero")
+                return
+            
+            if cantidad_int > cantidad_disponible:
+                messagebox.showwarning("Advertencia", "No hay suficiente cantidad disponible")
+                return
+        except ValueError:
+            messagebox.showerror("Error", "La cantidad debe ser un número entero")
+            return
+        
+        conn = sqlite3.connect('erp_autobuses.db')
+        try:
+            cursor = conn.cursor()
+            
+            # Verificar si existe la tabla de salidas, si no, crearla
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS salidas_inventario (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    producto_id INTEGER,
+                    fecha TEXT,
+                    tipo_producto TEXT,
+                    descripcion TEXT,
+                    cantidad INTEGER,
+                    destino TEXT,
+                    responsable TEXT,
+                    notas TEXT,
+                    FOREIGN KEY(producto_id) REFERENCES compras(id)
+                )
+            """)
+            
+            # Registrar la salida
+            fecha = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            cursor.execute("""
+                INSERT INTO salidas_inventario (producto_id, fecha, tipo_producto, descripcion, cantidad, destino, responsable, notas)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """, (id_producto, fecha, tipo_producto, descripcion, cantidad_int, destino, responsable, notas))
+            
+            conn.commit()
+            messagebox.showinfo("Éxito", "Salida registrada correctamente")
+            popup.destroy()
+            self.cargar_inventario()  # Recargar inventario para reflejar el cambio
+        except Exception as e:
+            conn.rollback()
+            messagebox.showerror("Error", f"Error al registrar salida: {str(e)}")
+        finally:
+            conn.close()
+
+    # ------ Movimientos de Inventario ------
+    def setup_tab_movimientos(self, parent):
+        """Configura la pestaña de movimientos de inventario"""
+        frame = tk.Frame(parent)
+        frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+        
+        # Frame superior para filtros
+        filtros_frame = tk.Frame(frame)
+        filtros_frame.pack(fill=tk.X, pady=10)
+        
+        # Selector de tipo de movimiento
+        tk.Label(filtros_frame, text="Tipo:").pack(side=tk.LEFT, padx=5)
+        self.filtro_movimiento = ttk.Combobox(filtros_frame, values=["Todos", "Entradas", "Salidas"], width=10, state="readonly")
+        self.filtro_movimiento.pack(side=tk.LEFT, padx=5)
+        self.filtro_movimiento.set("Todos")
+        
+        # Filtro por tipo de producto
+        tk.Label(filtros_frame, text="Tipo Producto:").pack(side=tk.LEFT, padx=5)
+        self.filtro_mov_tipo = ttk.Combobox(filtros_frame, width=15, state="readonly")
+        self.filtro_mov_tipo.pack(side=tk.LEFT, padx=5)
+        
+        # Filtro por fecha
+        tk.Label(filtros_frame, text="Desde:").pack(side=tk.LEFT, padx=5)
+        self.fecha_desde = DateEntry(filtros_frame, width=12, background='darkblue', foreground='white', borderwidth=2)
+        self.fecha_desde.pack(side=tk.LEFT, padx=5)
+        self.fecha_desde.set_date(datetime.datetime.now() - datetime.timedelta(days=30))
+        
+        tk.Label(filtros_frame, text="Hasta:").pack(side=tk.LEFT, padx=5)
+        self.fecha_hasta = DateEntry(filtros_frame, width=12, background='darkblue', foreground='white', borderwidth=2)
+        self.fecha_hasta.pack(side=tk.LEFT, padx=5)
+        self.fecha_hasta.set_date(datetime.datetime.now())
+        
+        # Botones
+        tk.Button(filtros_frame, text="Aplicar Filtros", command=self.filtrar_movimientos).pack(side=tk.LEFT, padx=5)
+        tk.Button(filtros_frame, text="Refrescar", command=self.cargar_movimientos).pack(side=tk.LEFT, padx=5)
+        
+        # Cargar tipos de producto para el filtro
+        self.cargar_tipos_para_movimientos()
+        
+        # Tabla de movimientos
+        columns = ("ID", "Fecha", "Tipo", "Producto", "Descripción", "Cantidad", "Proveedor/Destino", "Responsable", "Notas")
+        self.tree_movimientos = ttk.Treeview(frame, columns=columns, show="headings")
+        
+        for col in columns:
+            self.tree_movimientos.heading(col, text=col)
+            width = 80 if col == "ID" else 120 if col not in ["Descripción", "Proveedor/Destino", "Notas"] else 180
+            self.tree_movimientos.column(col, width=width)
+        
+        scrollbar = ttk.Scrollbar(frame, orient="vertical", command=self.tree_movimientos.yview)
+        self.tree_movimientos.configure(yscrollcommand=scrollbar.set)
+        
+        self.tree_movimientos.pack(fill=tk.BOTH, expand=True, pady=10)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        # Cargar datos iniciales
+        self.cargar_movimientos()
+
+    def cargar_tipos_para_movimientos(self):
+        """Carga los tipos de producto para el filtro en movimientos"""
+        conn = sqlite3.connect('erp_autobuses.db')
+        try:
+            cursor = conn.cursor()
+            
+            # Verificar si existe la tabla de salidas_inventario
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='salidas_inventario'")
+            existe_tabla = cursor.fetchone() is not None
+            
+            if existe_tabla:
+                # Si existe la tabla, obtener los tipos de producto de ambas tablas
+                cursor.execute("SELECT DISTINCT tipo_producto FROM compras UNION SELECT DISTINCT tipo_producto FROM salidas_inventario ORDER BY tipo_producto")
+            else:
+                # Si no existe la tabla, obtener los tipos solo de compras
+                cursor.execute("SELECT DISTINCT tipo_producto FROM compras ORDER BY tipo_producto")
+                
+            tipos = ["Todos"] + [row[0] for row in cursor.fetchall()]
+            self.filtro_mov_tipo['values'] = tipos
+            self.filtro_mov_tipo.set("Todos")
+        except Exception as e:
+            messagebox.showerror("Error", f"Error al cargar tipos de producto: {str(e)}")
+        finally:
+            conn.close()
+
+    def cargar_movimientos(self):
+        """Carga todos los movimientos de inventario (entradas y salidas)"""
+        for item in self.tree_movimientos.get_children():
+            self.tree_movimientos.delete(item)
+        
+        conn = sqlite3.connect('erp_autobuses.db')
+        try:
+            cursor = conn.cursor()
+            
+            # Cargar entradas (compras)
+            cursor.execute("""
+                SELECT 
+                    c.id, 
+                    c.fecha, 
+                    'Entrada' as tipo, 
+                    c.tipo_producto, 
+                    c.descripcion, 
+                    c.cantidad, 
+                    p.nombre,
+                    '' as responsable,
+                    '' as notas
+                FROM compras c
+                JOIN proveedores p ON c.proveedor_id = p.id
+                ORDER BY c.fecha DESC
+            """)
+            
+            entradas = cursor.fetchall()
+            
+            # Verificar si existe la tabla de salidas_inventario
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='salidas_inventario'")
+            existe_tabla = cursor.fetchone() is not None
+            
+            salidas = []
+            if existe_tabla:
+                # Cargar salidas solo si la tabla existe
+                cursor.execute("""
+                    SELECT 
+                        s.id,
+                        s.fecha,
+                        'Salida' as tipo,
+                        s.tipo_producto,
+                        s.descripcion,
+                        s.cantidad,
+                        s.destino,
+                        s.responsable,
+                        s.notas
+                    FROM salidas_inventario s
+                    ORDER BY s.fecha DESC
+                """)
+                
+                salidas = cursor.fetchall()
+            
+            # Combinar y ordenar por fecha
+            todos_movimientos = entradas + salidas
+            todos_movimientos.sort(key=lambda x: x[1], reverse=True)
+            
+            for row in todos_movimientos:
+                self.tree_movimientos.insert("", tk.END, values=row)
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Error al cargar movimientos: {str(e)}")
+        finally:
+            conn.close()
+
+    def filtrar_movimientos(self):
+        """Filtra los movimientos por tipo, fecha y tipo de producto"""
+        tipo_movimiento = self.filtro_movimiento.get()
+        tipo_producto = self.filtro_mov_tipo.get()
+        desde = self.fecha_desde.get_date().strftime("%Y-%m-%d")
+        hasta = self.fecha_hasta.get_date().strftime("%Y-%m-%d")
+        
+        for item in self.tree_movimientos.get_children():
+            self.tree_movimientos.delete(item)
+        
+        conn = sqlite3.connect('erp_autobuses.db')
+        try:
+            cursor = conn.cursor()
+            
+            movimientos_filtrados = []
+            
+            # Consultar entradas si corresponde
+            if tipo_movimiento in ["Todos", "Entradas"]:
+                query_entradas = """
+                    SELECT 
+                        c.id, 
+                        c.fecha, 
+                        'Entrada' as tipo, 
+                        c.tipo_producto, 
+                        c.descripcion, 
+                        c.cantidad, 
+                        p.nombre,
+                        '' as responsable,
+                        '' as notas
+                    FROM compras c
+                    JOIN proveedores p ON c.proveedor_id = p.id
+                    WHERE c.fecha BETWEEN ? AND ?
+                """
+                
+                params = [desde, hasta + " 23:59:59"]
+                
+                if tipo_producto != "Todos":
+                    query_entradas += " AND c.tipo_producto = ?"
+                    params.append(tipo_producto)
+                
+                query_entradas += " ORDER BY c.fecha DESC"
+                
+                cursor.execute(query_entradas, params)
+                movimientos_filtrados.extend(cursor.fetchall())
+            
+            # Verificar si existe la tabla de salidas_inventario
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='salidas_inventario'")
+            existe_tabla = cursor.fetchone() is not None
+            
+            # Consultar salidas si corresponde y si la tabla existe
+            if tipo_movimiento in ["Todos", "Salidas"] and existe_tabla:
+                query_salidas = """
+                    SELECT 
+                        s.id,
+                        s.fecha,
+                        'Salida' as tipo,
+                        s.tipo_producto,
+                        s.descripcion,
+                        s.cantidad,
+                        s.destino,
+                        s.responsable,
+                        s.notas
+                    FROM salidas_inventario s
+                    WHERE s.fecha BETWEEN ? AND ?
+                """
+                
+                params = [desde, hasta + " 23:59:59"]
+                
+                if tipo_producto != "Todos":
+                    query_salidas += " AND s.tipo_producto = ?"
+                    params.append(tipo_producto)
+                
+                query_salidas += " ORDER BY s.fecha DESC"
+                
+                cursor.execute(query_salidas, params)
+                movimientos_filtrados.extend(cursor.fetchall())
+            
+            # Ordenar por fecha
+            movimientos_filtrados.sort(key=lambda x: x[1], reverse=True)
+            
+            for row in movimientos_filtrados:
+                self.tree_movimientos.insert("", tk.END, values=row)
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Error al filtrar movimientos: {str(e)}")
         finally:
             conn.close()
 
