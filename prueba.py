@@ -316,7 +316,7 @@ class SistemaERP:
 
         # Campo Contraseña
         tk.Label(login_frame, text="Contraseña", font=("Helvetica", 12), bg="white").pack(anchor="w")
-        self.password_entry = tk.Entry(login_frame, width=30, font=("Helvetica", 11), show="*", bd=1, relief="solid")
+        self.password_entry = tk.Entry(login_frame, width=30, font=("Helvetica", 11), show="•", bd=1, relief="solid")
         self.password_entry.pack(pady=(0, 25))
 
         # Botón Iniciar Sesión
@@ -2109,9 +2109,37 @@ class SistemaERP:
         cursor = conn.cursor()
         
         try:
-            # Obtener ventas por ruta
+            # Limpiar frame anterior
+            for widget in self.resultado_frame.winfo_children():
+                widget.destroy()
+
+            # Configurar fondo blanco
+            self.resultado_frame.configure(bg='white')
+            
+            # Contenedor principal centrado
+            main_frame = tk.Frame(self.resultado_frame, bg='white')
+            main_frame.pack(expand=True, fill='both', padx=20, pady=20)
+
+            # 1. CABECERA DEL INFORME (centrada) con color #003366
+            header_frame = tk.Frame(main_frame, bg='white')
+            header_frame.pack(fill='x', pady=(0, 10))
+            
+            tk.Label(header_frame, text="Ventas por Ruta", 
+                    font=("Arial", 16, "bold"), 
+                    bg='white', 
+                    fg='#003366').pack()
+            
+            tk.Label(header_frame, 
+                    text=f"Período: {fecha_desde} al {fecha_hasta}",
+                    font=("Arial", 10), 
+                    bg='white',
+                    fg='#003366').pack(pady=(5, 15))
+
+            # 2. OBTENER DATOS DE LA BASE DE DATOS
             cursor.execute('''
-            SELECT r.origen || ' - ' || r.destino as ruta, COUNT(b.id) as total_boletos, SUM(b.precio) as total_ventas
+            SELECT r.origen || ' - ' || r.destino as ruta, 
+                COUNT(b.id) as total_boletos, 
+                SUM(b.precio) as total_ventas
             FROM boletos b
             JOIN horarios h ON b.horario_id = h.id
             JOIN rutas r ON h.ruta_id = r.id
@@ -2121,80 +2149,120 @@ class SistemaERP:
             ''', (fecha_desde, fecha_hasta))
             
             ventas_ruta = cursor.fetchall()
-            
-            # Crear tabla resumen
-            tk.Label(self.resultado_frame, text="Ventas por Ruta", 
-                    font=("Arial", 14, "bold"), bg='white', fg='#003366').pack(pady=10)
-            
+
             if not ventas_ruta:
-                tk.Label(self.resultado_frame, text="No hay ventas registradas en este período",
-                        bg='white', fg='#003366').pack(pady=20)
+                tk.Label(main_frame, text="No hay ventas registradas en este período",
+                        bg='white', fg='red').pack(pady=50)
                 return
-            
-            # Crear treeview
+
+            # 3. TABLA DE VENTAS (con scroll solo si hay más de 3 rutas)
+            table_frame = tk.Frame(main_frame, bg='white')
+            table_frame.pack(fill='both', expand=True, pady=(0, 20))
+
+            # Configurar estilo de la tabla
             style = ttk.Style()
-            style.configure("Treeview", 
-                          background="white", 
-                          foreground="#003366",
-                          rowheight=25,
-                          fieldbackground="white")
-            style.map('Treeview', background=[('selected', '#003366')])
-            
+            style.configure("Treeview",
+                        font=('Arial', 10),
+                        rowheight=25,
+                        background="white",
+                        foreground="black",
+                        fieldbackground="white")
+            style.configure("Treeview.Heading",
+                        font=('Arial', 10, 'bold'),
+                        background="#f5f5f5",
+                        foreground="#003366")  # Color para los encabezados
+            style.map('Treeview', background=[('selected', '#0078D7')])
+
+            # Determinar altura de la tabla
+            mostrar_scroll = len(ventas_ruta) > 3
+            altura_tabla = 3 if mostrar_scroll else len(ventas_ruta)
+
+            # Crear Treeview
             columns = ("Ruta", "Total Boletos", "Total Ventas")
-            tree = ttk.Treeview(self.resultado_frame, columns=columns, show="headings", style="Treeview")
-            
+            tree = ttk.Treeview(table_frame, columns=columns, show="headings", height=altura_tabla)
+
             # Configurar columnas
-            for col in columns:
-                tree.heading(col, text=col, anchor='center')
-                tree.column(col, width=150, anchor='center')
-            
+            tree.column("Ruta", width=350, anchor='w')
+            tree.column("Total Boletos", width=120, anchor='center')
+            tree.column("Total Ventas", width=150, anchor='e')
+
+            # Configurar encabezados
+            tree.heading("Ruta", text="Ruta", anchor='center')
+            tree.heading("Total Boletos", text="Total Boletos", anchor='center')
+            tree.heading("Total Ventas", text="Total Ventas", anchor='center')
+
             # Insertar datos
             for row in ventas_ruta:
                 tree.insert("", tk.END, values=(row[0], row[1], f"${row[2]:,.2f}"))
+
+            # Configurar scrollbar solo si es necesario
+            if mostrar_scroll:
+                vsb = ttk.Scrollbar(table_frame, orient="vertical", command=tree.yview)
+                tree.configure(yscrollcommand=vsb.set)
+                vsb.pack(side='right', fill='y')
+
+            tree.pack(side='left', fill='both', expand=True)
+
+            # 4. TOTAL GENERAL (centrado)
+            total_ventas = sum(row[2] for row in ventas_ruta)
+            tk.Label(main_frame, 
+                    text=f"Total General: ${total_ventas:,.2f}",
+                    font=("Arial", 12, "bold"), 
+                    bg='white',
+                    fg='#003366').pack(pady=(10, 20))
+
+            # 5. GRÁFICO DE BARRAS MEJORADO (centrado)
+            graph_frame = tk.Frame(main_frame, bg='white')
+            graph_frame.pack(fill='both', expand=True, pady=(0, 20))
+
+            # Preparar datos para el gráfico
+            top_rutas = [row[0] for row in ventas_ruta[:5]]
+            top_ventas = [row[2] for row in ventas_ruta[:5]]
+
+            # Crear figura con fondo blanco
+            fig = plt.Figure(figsize=(10, 5), dpi=100, facecolor='white')
+            ax = fig.add_subplot(111, facecolor='white')
             
-            tree.pack(fill=tk.BOTH, expand=True, pady=10)
+            # Configuración del gráfico mejorado
+            ax.spines['top'].set_visible(False)
+            ax.spines['right'].set_visible(False)
+            ax.spines['left'].set_color('#003366')  # Color para el eje Y
+            ax.spines['bottom'].set_color('#003366')  # Color para el eje X
             
-            # Crear gráfico
-            figure = plt.Figure(figsize=(6, 4), dpi=100, facecolor='white')
-            ax = figure.add_subplot(111)
-            ax.set_facecolor('white')
+            # Configurar colores de los ejes y etiquetas
+            ax.tick_params(axis='both', colors='#003366', labelsize=9)
+            ax.grid(axis='y', color='#f0f0f0', linestyle='--')
             
-            # Configurar colores del gráfico
-            ax.spines['bottom'].set_color('#003366')
-            ax.spines['top'].set_color('#003366') 
-            ax.spines['right'].set_color('#003366')
-            ax.spines['left'].set_color('#003366')
-            ax.tick_params(axis='x', colors='#003366')
-            ax.tick_params(axis='y', colors='#003366')
-            ax.yaxis.label.set_color('#003366')
-            ax.xaxis.label.set_color('#003366')
-            ax.title.set_color('#003366')
+            # Crear barras con colores modernos
+            colors = ['#4e79a7', '#f28e2b', '#e15759', '#76b7b2', '#59a14f']
+            bars = ax.bar(top_rutas, top_ventas, color=colors, width=0.6, edgecolor='white', linewidth=0.5)
             
-            rutas = [row[0] for row in ventas_ruta]
-            ventas = [row[2] for row in ventas_ruta]
-            
-            # Limitar a las 5 rutas con más ventas para el gráfico
-            if len(rutas) > 5:
-                rutas = rutas[:5]
-                ventas = ventas[:5]
-            
-            bars = ax.bar(rutas, ventas, color='#003366')
-            ax.set_title('Top Ventas por Ruta', color='#003366')
-            ax.set_ylabel('Ventas ($)', color='#003366')
-            ax.set_xlabel('Ruta', color='#003366')
-            ax.grid(True, color='#e6ecf0')
-            plt.setp(ax.get_xticklabels(), rotation=45, ha='right', color='#003366')
-            
-            # Agregar etiquetas con valores
+            # Añadir valores encima de las barras
             for bar in bars:
                 height = bar.get_height()
                 ax.text(bar.get_x() + bar.get_width()/2., height,
                         f'${height:,.0f}',
-                        ha='center', va='bottom', color='#003366')
+                        ha='center', va='bottom', color='black', fontsize=9,
+                        bbox=dict(facecolor='white', edgecolor='none', pad=1))
+
+            # Configurar título y etiquetas con color #003366
+            ax.set_title('Top Ventas por Ruta', pad=20, fontsize=12, fontweight='bold', color='#003366')
+            ax.set_ylabel('Ventas ($)', fontsize=10, color='#003366')
+            ax.set_xlabel('Ruta', fontsize=10, color='#003366')
             
-            canvas = FigureCanvasTkAgg(figure, self.resultado_frame)
-            canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+            # Ajustar espacio entre etiquetas del eje X
+            plt.xticks(rotation=45, ha='right', fontsize=9)  # Rotación de 45 grados para mejor legibilidad
+            fig.subplots_adjust(bottom=0.25)  # Aumentar espacio inferior para las etiquetas
             
+            # Asegurar que las etiquetas no se solapen
+            fig.tight_layout()
+            plt.margins(x=0.1)  # Añadir margen adicional a los lados
+
+            # Integrar gráfico en Tkinter
+            chart = FigureCanvasTkAgg(fig, master=graph_frame)
+            chart.draw()
+            chart.get_tk_widget().pack(fill='both', expand=True)
+
         except Exception as e:
             messagebox.showerror("Error", f"Error al generar informe: {str(e)}")
         finally:
@@ -2214,6 +2282,9 @@ class SistemaERP:
                 ORDER BY total DESC
             ''', (fecha_desde, fecha_hasta))
             resultados = cursor.fetchall()
+        
+            # Calcular el total general
+            total_general = sum(row[1] for row in resultados) if resultados else 0
         
             # Limpiar frame de resultados
             for widget in self.resultado_frame.winfo_children():
@@ -2241,6 +2312,14 @@ class SistemaERP:
             for i, row in enumerate(resultados, start=1):
                 tk.Label(tabla_frame, text=row[0], bg='white', fg='#003366').grid(row=i, column=0, padx=10, pady=5, sticky="w")
                 tk.Label(tabla_frame, text=f"${row[1]:,.2f}", bg='white', fg='#003366').grid(row=i, column=1, padx=10, pady=5)
+            
+            # Agregar fila de total general
+            tk.Label(tabla_frame, text="TOTAL GENERAL", 
+                    font=("Arial", 12, "bold"), bg='white', fg='#003366').grid(
+                    row=len(resultados)+1, column=0, padx=10, pady=5, sticky="w")
+            tk.Label(tabla_frame, text=f"${total_general:,.2f}", 
+                    font=("Arial", 12, "bold"), bg='white', fg='#003366').grid(
+                    row=len(resultados)+1, column=1, padx=10, pady=5)
         
             # Crear gráfico
             figure = plt.Figure(figsize=(6, 4), dpi=100, facecolor='white')
@@ -2261,21 +2340,31 @@ class SistemaERP:
             categorias = [row[0] for row in resultados]
             montos = [row[1] for row in resultados]
         
-            bars = ax.bar(categorias, montos, color='#F44336')
-            ax.set_title('Gastos por Categoría', color='#003366')
-            ax.set_ylabel('Monto ($)', color='#003366')
-            ax.grid(True, color='#e6ecf0')
-            plt.setp(ax.get_xticklabels(), rotation=45, ha='right', color='#003366')
-        
-            # Agregar etiquetas con valores
+            # Crear gráfico de barras con colores personalizados
+            colors = ['#F44336', '#2196F3', '#4CAF50', '#FFC107', '#9C27B0', '#607D8B']
+            bars = ax.bar(categorias, montos, color=colors[:len(categorias)])
+            
+            #ax.set_title('Gastos por Categoría', color='#003366', pad=20)
+            ax.set_ylabel('Monto ($)', color='#003366', labelpad=10)
+            ax.grid(True, color='#e6ecf0', linestyle='--', alpha=0.7)
+            
+            # Ajustar etiquetas del eje x sin inclinación
+            ax.set_xticklabels(categorias, color='#003366')
+            
+            # Ajustar márgenes para evitar que las etiquetas se corten
+            figure.tight_layout()
+            
+            # Agregar etiquetas con valores en las barras
             for bar in bars:
                 height = bar.get_height()
                 ax.text(bar.get_x() + bar.get_width()/2., height,
                         f'${height:,.0f}',
-                        ha='center', va='bottom', color='#003366')
+                        ha='center', va='bottom', color='#003366', fontsize=9)
             
+            # Crear canvas para el gráfico
             canvas = FigureCanvasTkAgg(figure, self.resultado_frame)
-            canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+            canvas.draw()
+            canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
         except Exception as e:
             messagebox.showerror("Error", f"Error al generar informe: {str(e)}")
