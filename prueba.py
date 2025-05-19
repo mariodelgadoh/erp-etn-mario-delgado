@@ -2658,28 +2658,29 @@ class SistemaERP:
         finally:
             conn.close()
 
-    # ------ Inventario General ------
+   # ------ Inventario General ------
     def setup_tab_inventario(self, parent):
-        """Configura la pestaña de inventario general"""
+        """Configura la pestaña de inventario general con tabla optimizada"""
+        # Frame principal
         frame = tk.Frame(parent, bg="#FFFFFF")
         frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
         
-        # Frame de filtros y controles
+        # Frame de filtros
         filtros_frame = tk.Frame(frame, bg="#FFFFFF")
         filtros_frame.pack(fill=tk.X, pady=10)
         
         # Estilo para etiquetas
         label_style = {"bg": "#FFFFFF", "fg": "#003366", "font": ("Helvetica", 11)}
         
-        # Filtros
+        # Filtro Tipo de Producto
         tk.Label(filtros_frame, text="Tipo De Producto:", **label_style).pack(side=tk.LEFT, padx=5)
-        self.filtro_tipo = ttk.Combobox(filtros_frame, width=15, state="readonly")
+        self.filtro_tipo = ttk.Combobox(filtros_frame, width=20, state="readonly")
         self.filtro_tipo.pack(side=tk.LEFT, padx=5)
-        self.filtro_tipo.pack(side=tk.LEFT, padx=5, ipadx=25)  
         self.filtro_tipo.bind("<<ComboboxSelected>>", self.actualizar_proveedores_por_tipo)
         
+        # Filtro Proveedor
         tk.Label(filtros_frame, text="Proveedor:", **label_style).pack(side=tk.LEFT, padx=5)
-        self.filtro_proveedor = ttk.Combobox(filtros_frame, width=15, state="readonly")
+        self.filtro_proveedor = ttk.Combobox(filtros_frame, width=20, state="readonly")
         self.filtro_proveedor.pack(side=tk.LEFT, padx=5)
         
         # Estilo de botones
@@ -2697,38 +2698,88 @@ class SistemaERP:
         
         # Botones
         tk.Button(filtros_frame, text="Aplicar Filtros", command=self.filtrar_inventario, 
-                 **button_style).pack(side=tk.LEFT, padx=5)
+                **button_style).pack(side=tk.LEFT, padx=5)
         tk.Button(filtros_frame, text="Registrar Salida", command=self.mostrar_formulario_salida, 
-                 **button_style).pack(side=tk.LEFT, padx=5)
+                **button_style).pack(side=tk.LEFT, padx=5)
         
-        # Frame para resumen de inventario
+        # Resumen de inventario
         resumen_frame = tk.Frame(frame, bg="#FFFFFF")
         resumen_frame.pack(fill=tk.X, pady=10)
-        self.label_resumen = tk.Label(resumen_frame, 
-                                    text="Total de productos: 0 | Cantidad total: 0 | Valor total: $0.00", 
-                                    font=("Helvetica", 11, "bold"), 
-                                    bg="#FFFFFF", 
-                                    fg="#003366")
+        self.label_resumen = tk.Label(
+            resumen_frame, 
+            text="Total de productos: 0 | Cantidad total: 0 | Valor total: $0.00", 
+            font=("Helvetica", 11, "bold"), 
+            bg="#FFFFFF", 
+            fg="#003366"
+        )
         self.label_resumen.pack(side=tk.LEFT)
         
-        # Tabla de inventario
+        # Contenedor para tabla y scrollbars
+        table_container = tk.Frame(frame, bg="#FFFFFF")
+        table_container.pack(fill=tk.BOTH, expand=True, pady=10)
+        
+        # Configuración de la tabla
         columns = ("ID", "Tipo", "Descripción", "Cantidad", "Precio Unitario", "Valor Total", "Último Movimiento", "Proveedor")
-        self.tree_inventario = ttk.Treeview(frame, columns=columns, show="headings")
+        self.tree_inventario = ttk.Treeview(
+            table_container, 
+            columns=columns, 
+            show="headings",
+            selectmode="extended"
+        )
+        
+        # Configurar columnas con anchos iniciales
+        column_widths = {
+            "ID": 50,
+            "Tipo": 100,
+            "Descripción": 200,
+            "Cantidad": 80,
+            "Precio Unitario": 120,
+            "Valor Total": 120,
+            "Último Movimiento": 150,
+            "Proveedor": 150
+        }
         
         for col in columns:
-            self.tree_inventario.heading(col, text=col)
-            width = 100 if col not in ["Descripción", "Proveedor"] else 150
-            self.tree_inventario.column(col, width=width)
+            self.tree_inventario.heading(col, text=col, anchor="w")
+            self.tree_inventario.column(
+                col, 
+                width=column_widths.get(col, 100), 
+                anchor="w", 
+                stretch=True
+            )
         
-        scrollbar = ttk.Scrollbar(frame, orient="vertical", command=self.tree_inventario.yview)
-        self.tree_inventario.configure(yscrollcommand=scrollbar.set)
+        # Scrollbars
+        vsb = ttk.Scrollbar(table_container, orient="vertical", command=self.tree_inventario.yview)
+        hsb = ttk.Scrollbar(table_container, orient="horizontal", command=self.tree_inventario.xview)
+        self.tree_inventario.configure(yscrollcommand=vsb.set, xscrollcommand=hsb.set)
         
-        self.tree_inventario.pack(fill=tk.BOTH, expand=True, pady=10)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        # Grid layout para mejor organización
+        self.tree_inventario.grid(row=0, column=0, sticky="nsew")
+        vsb.grid(row=0, column=1, sticky="ns")
+        hsb.grid(row=1, column=0, sticky="ew")
         
-        # Cargar datos iniciales
+        # Configurar peso de fila/columna para expansión
+        table_container.grid_rowconfigure(0, weight=1)
+        table_container.grid_columnconfigure(0, weight=1)
+        
+        # Función para autoajustar columnas después de cargar datos
+        def autoajustar_columnas():
+            for col in columns:
+                self.tree_inventario.column(col, width=tk.font.Font().measure(col) + 20)
+                for item in self.tree_inventario.get_children():
+                    cell_value = str(self.tree_inventario.set(item, col))
+                    self.tree_inventario.column(
+                        col, 
+                        width=max(
+                            self.tree_inventario.column(col, "width"),
+                            tk.font.Font().measure(cell_value) + 20
+                        )
+                    )
+        
+        # Cargar datos y ajustar columnas
         self.cargar_tipos_y_proveedores()
         self.cargar_inventario()
+        frame.after(100, autoajustar_columnas)  # Ajuste después de renderizado
 
     def cargar_tipos_y_proveedores(self):
         """Carga los tipos de productos y proveedores para los filtros"""
@@ -3523,16 +3574,16 @@ class SistemaERP:
         # Formulario
         form_frame = tk.Frame(frame)
         form_frame.pack(pady=10)
+
+        # Tipo de producto
+        tk.Label(form_frame, text="Tipo de Producto:").grid(row=1, column=0, sticky="w", pady=5)
+        self.tipo_producto_combobox = ttk.Combobox(form_frame, values=["Autobús", "Computadora", "Productos de limpieza", "Otros"], width=27)
+        self.tipo_producto_combobox.grid(row=1, column=1, pady=5)
     
         # Proveedor
         tk.Label(form_frame, text="Proveedor:").grid(row=0, column=0, sticky="w", pady=5)
         self.proveedor_combobox = ttk.Combobox(form_frame, width=27)
         self.proveedor_combobox.grid(row=0, column=1, pady=5)
-    
-        # Tipo de producto
-        tk.Label(form_frame, text="Tipo de Producto:").grid(row=1, column=0, sticky="w", pady=5)
-        self.tipo_producto_combobox = ttk.Combobox(form_frame, values=["Autobús", "Computadora", "Productos de limpieza", "Otros"], width=27)
-        self.tipo_producto_combobox.grid(row=1, column=1, pady=5)
     
         # Descripción
         tk.Label(form_frame, text="Descripción:").grid(row=2, column=0, sticky="w", pady=5)
