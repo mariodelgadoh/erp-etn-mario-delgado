@@ -2556,7 +2556,7 @@ class SistemaERP:
         self.cargar_salidas()
 
     def mostrar_tooltip_nota(self, event):
-        """Muestra un tooltip instantáneo al pasar sobre notas"""
+        """Muestra un tooltip con scroll para notas largas"""
         # Identificar la celda actual
         col = self.tree_salidas.identify_column(event.x)
         item = self.tree_salidas.identify_row(event.y)
@@ -2593,18 +2593,84 @@ class SistemaERP:
                 y_pos = bbox[1] + self.tree_salidas.winfo_rooty() + 25
                 
                 # Configurar estilo del tooltip
-                self.tooltip.wm_geometry(f"+{x_pos}+{y_pos}")
                 self.tooltip.wm_attributes("-topmost", True)
                 
-                # Frame para el tooltip con borde
+                # Frame principal del tooltip
                 tooltip_frame = tk.Frame(self.tooltip, borderwidth=1, relief="solid", bg="#FFFFC0")
-                tooltip_frame.pack(fill="both", expand=True)
+                tooltip_frame.pack(fill="both", expand=True, padx=1, pady=1)
+                
+                # Canvas con scroll para manejar contenido grande
+                canvas = tk.Canvas(tooltip_frame, bg="#FFFFC0", highlightthickness=0)
+                scrollbar = ttk.Scrollbar(tooltip_frame, orient="vertical", command=canvas.yview)
+                scrollable_frame = tk.Frame(canvas, bg="#FFFFC0")
+                
+                # Configurar el sistema de scroll
+                scrollable_frame.bind(
+                    "<Configure>",
+                    lambda e: canvas.configure(
+                        scrollregion=canvas.bbox("all")
+                    )
+                )
+                
+                canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+                canvas.configure(yscrollcommand=scrollbar.set)
+                
+                # Empaquetar los elementos
+                canvas.pack(side="left", fill="both", expand=True)
+                scrollbar.pack(side="right", fill="y")
                 
                 # Etiqueta con el texto completo
-                label = tk.Label(tooltip_frame, text=texto_nota, wraplength=300, 
+                # Usamos un ancho máximo para el wrapped text para evitar tooltips extremadamente anchos
+                wraplength = 400
+                label = tk.Label(scrollable_frame, text=texto_nota, wraplength=wraplength, 
                             justify="left", bg="#FFFFC0", padx=5, pady=5,
                             font=("Helvetica", 10))
-                label.pack()
+                label.pack(anchor="w")
+                
+                # Actualizar el tooltip para mostrar la etiqueta
+                label.update_idletasks()
+                
+                # Obtener el tamaño real del contenido
+                label_width = label.winfo_reqwidth() + 10  # Añadir un poco más para el padding
+                label_height = label.winfo_reqheight() + 10
+                
+                # Ajustar posición si se sale de la pantalla
+                screen_width = self.tree_salidas.winfo_screenwidth()
+                screen_height = self.tree_salidas.winfo_screenheight()
+                
+                # Ajustar el ancho del scrollbar
+                scrollbar_width = scrollbar.winfo_reqwidth()
+                
+                # Calcular dimensiones finales del tooltip
+                final_width = min(label_width + scrollbar_width, wraplength + scrollbar_width + 10)
+                # Establecer una altura máxima para evitar tooltips muy grandes
+                max_height = 300
+                final_height = min(label_height, max_height)
+                
+                # Ajustar posición X si se sale por la derecha
+                if x_pos + final_width > screen_width:
+                    x_pos = screen_width - final_width - 10
+                
+                # Ajustar posición Y si se sale por abajo
+                if y_pos + final_height > screen_height:
+                    y_pos = y_pos - final_height - 20
+                
+                # Configurar las dimensiones y posición final del tooltip
+                self.tooltip.wm_geometry(f"{final_width}x{final_height}+{int(x_pos)}+{int(y_pos)}")
+                
+                # Ajustar tamaño del canvas para que coincida con el tooltip
+                canvas.config(width=final_width - scrollbar_width, height=final_height)
+                
+                # Habilitar scroll con rueda del mouse
+                def _on_mousewheel(event):
+                    canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+                
+                canvas.bind_all("<MouseWheel>", _on_mousewheel)
+                
+                # Mostrar barras de desplazamiento solo si el contenido es más grande que el canvas
+                canvas.update_idletasks()
+                if label_height <= final_height:
+                    scrollbar.pack_forget()
                 
                 # Guardar referencia de la celda actual
                 self.last_item = item
@@ -2615,6 +2681,11 @@ class SistemaERP:
     def ocultar_tooltip(self, event):
         """Oculta el tooltip si existe"""
         if self.tooltip:
+            try:
+                # Desvincular eventos del mouse wheel
+                self.tooltip.unbind_all("<MouseWheel>")
+            except:
+                pass
             self.tooltip.destroy()
             self.tooltip = None
         self.last_item = None
