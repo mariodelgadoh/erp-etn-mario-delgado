@@ -2506,23 +2506,23 @@ class SistemaERP:
         # Filtro por fecha
         tk.Label(filtros_frame, text="Desde:", **label_style).pack(side=tk.LEFT, padx=5)
         self.fecha_salida_desde = DateEntry(filtros_frame, width=12, 
-                                           background='#003366', foreground='white', 
-                                           borderwidth=1, font=("Helvetica", 11))
+                                        background='#003366', foreground='white', 
+                                        borderwidth=1, font=("Helvetica", 11))
         self.fecha_salida_desde.pack(side=tk.LEFT, padx=5)
         self.fecha_salida_desde.set_date(datetime.datetime.now() - datetime.timedelta(days=30))
         
         tk.Label(filtros_frame, text="Hasta:", **label_style).pack(side=tk.LEFT, padx=5)
         self.fecha_salida_hasta = DateEntry(filtros_frame, width=12, 
-                                          background='#003366', foreground='white', 
-                                          borderwidth=1, font=("Helvetica", 11))
+                                        background='#003366', foreground='white', 
+                                        borderwidth=1, font=("Helvetica", 11))
         self.fecha_salida_hasta.pack(side=tk.LEFT, padx=5)
         self.fecha_salida_hasta.set_date(datetime.datetime.now())
         
         # Botón con estilo
         btn_aplicar = tk.Button(filtros_frame, text="Aplicar Filtros", command=self.filtrar_salidas,
-                            bg="#003366", fg="#FFFFFF", font=("Helvetica", 10, "bold"),
-                            relief="flat", cursor="hand2", padx=10, pady=2,
-                            activebackground="#002244", activeforeground="#FFFFFF")
+                                bg="#003366", fg="#FFFFFF", font=("Helvetica", 10, "bold"),
+                                relief="flat", cursor="hand2", padx=10, pady=2,
+                                activebackground="#002244", activeforeground="#FFFFFF")
         btn_aplicar.pack(side=tk.LEFT, padx=5)
         
         # Tabla de salidas
@@ -2540,11 +2540,85 @@ class SistemaERP:
         self.tree_salidas.pack(fill=tk.BOTH, expand=True, pady=10)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         
+        # Configurar el tooltip para la columna Notas
+        self.tooltip = None
+        self.last_item = None
+        self.last_column = None
+        
+        self.tree_salidas.bind("<Motion>", self.mostrar_tooltip_nota)
+        self.tree_salidas.bind("<Leave>", self.ocultar_tooltip)
+        self.tree_salidas.bind("<ButtonPress>", self.ocultar_tooltip)
+
         # Cargar tipos de producto para el filtro
         self.cargar_tipos_para_salidas()
         
         # Cargar datos iniciales
         self.cargar_salidas()
+
+    def mostrar_tooltip_nota(self, event):
+        """Muestra un tooltip instantáneo al pasar sobre notas"""
+        # Identificar la celda actual
+        col = self.tree_salidas.identify_column(event.x)
+        item = self.tree_salidas.identify_row(event.y)
+        
+        # Solo procesar si estamos en la columna de Notas (columna 8)
+        if item and col == "#8":
+            # Si ya estamos mostrando el tooltip para esta celda, no hacer nada
+            if self.last_item == item and self.last_column == col and self.tooltip:
+                return
+            
+            # Obtener el texto de la nota
+            valores = self.tree_salidas.item(item, "values")
+            if not valores or len(valores) < 8:
+                return
+                
+            texto_nota = valores[7]
+            
+            # Ocultar tooltip anterior si existe
+            if self.tooltip:
+                self.tooltip.destroy()
+                self.tooltip = None
+            
+            # Solo crear tooltip si hay texto
+            if texto_nota:
+                self.tooltip = tk.Toplevel(self.tree_salidas)
+                self.tooltip.wm_overrideredirect(True)
+                
+                # Calcular posición del tooltip
+                bbox = self.tree_salidas.bbox(item, "#8")
+                if not bbox:
+                    return
+                    
+                x_pos = bbox[0] + self.tree_salidas.winfo_rootx() + 25
+                y_pos = bbox[1] + self.tree_salidas.winfo_rooty() + 25
+                
+                # Configurar estilo del tooltip
+                self.tooltip.wm_geometry(f"+{x_pos}+{y_pos}")
+                self.tooltip.wm_attributes("-topmost", True)
+                
+                # Frame para el tooltip con borde
+                tooltip_frame = tk.Frame(self.tooltip, borderwidth=1, relief="solid", bg="#FFFFC0")
+                tooltip_frame.pack(fill="both", expand=True)
+                
+                # Etiqueta con el texto completo
+                label = tk.Label(tooltip_frame, text=texto_nota, wraplength=300, 
+                            justify="left", bg="#FFFFC0", padx=5, pady=5,
+                            font=("Helvetica", 10))
+                label.pack()
+                
+                # Guardar referencia de la celda actual
+                self.last_item = item
+                self.last_column = col
+        elif self.tooltip:
+            self.ocultar_tooltip(None)
+
+    def ocultar_tooltip(self, event):
+        """Oculta el tooltip si existe"""
+        if self.tooltip:
+            self.tooltip.destroy()
+            self.tooltip = None
+        self.last_item = None
+        self.last_column = None
 
     def cargar_tipos_para_salidas(self):
         """Carga los tipos de producto para el filtro en salidas"""
