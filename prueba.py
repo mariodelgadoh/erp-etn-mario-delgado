@@ -2376,21 +2376,42 @@ class SistemaERP:
         for widget in self.root.winfo_children():
             widget.destroy()
 
-    # ==================== MÓDULO DE INVENTARIO ====================
+
+# ==================== MÓDULO DE INVENTARIO ====================
+    
     def mostrar_modulo_inventario(self):
-        """Muestra la interfaz principal del módulo de inventario"""
-        self.limpiar_ventana()
+        # Limpiar ventana
+        for widget in self.root.winfo_children():
+            widget.destroy()
         
-        main_frame = tk.Frame(self.root)
-        main_frame.pack(fill=tk.BOTH, expand=True)
+        # Configurar fondo general
+        self.root.configure(bg='#e6ecf0')
+        
+        # Frame principal
+        main_frame = tk.Frame(self.root, bg='#e6ecf0')
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
         
         # Barra superior
-        top_frame = tk.Frame(main_frame)
+        top_frame = tk.Frame(main_frame, bg='white', bd=2, relief='ridge')
         top_frame.pack(fill=tk.X, padx=10, pady=5)
-        tk.Button(top_frame, text="Volver al Menú", command=self.mostrar_menu_principal).pack(side=tk.RIGHT)
-        tk.Label(top_frame, text="Módulo de Inventario", font=("Arial", 16)).pack(side=tk.LEFT)
         
-        # Pestañas
+        # Botón de regreso
+        back_btn = tk.Button(top_frame, text="Volver al Menú", 
+                           command=self.mostrar_menu_principal,
+                           bg='#003366', fg='white',
+                           font=('Arial', 10, 'bold'),
+                           relief='flat', activebackground='#002244')
+        back_btn.pack(side=tk.RIGHT, padx=10, pady=5)
+        
+        # Título
+        tk.Label(top_frame, text="Módulo de Inventario", 
+                font=("Arial", 16, "bold"), fg='#003366', bg='white').pack(side=tk.LEFT, padx=10)
+        
+        # Frame de pestañas
+        tab_style = ttk.Style()
+        tab_style.configure('TNotebook', background='#e6ecf0')
+        tab_style.configure('TNotebook.Tab', font=('Arial', 10, 'bold'), padding=[10, 5])
+        
         tab_control = ttk.Notebook(main_frame)
         
         # Pestaña Inventario General
@@ -2403,7 +2424,20 @@ class SistemaERP:
         tab_control.add(tab_salidas, text="Historial de Salidas")
         self.setup_tab_salidas(tab_salidas)
         
-        tab_control.pack(expand=1, fill="both")
+        tab_control.pack(expand=1, fill="both", padx=10, pady=10)
+        
+        # Configurar estilo para Treeview
+        tab_style.configure("Treeview", 
+                        background="#FFFFFF",
+                        foreground="#003366",
+                        rowheight=25,
+                        fieldbackground="#FFFFFF",
+                        font=("Arial", 10))
+        tab_style.configure("Treeview.Heading", 
+                        font=("Arial", 10, "bold"),
+                        background="#e6ecf0",
+                        foreground="#003366")
+        tab_style.map("Treeview", background=[("selected", "#003366")], foreground=[("selected", "#FFFFFF")])
         
         # Al iniciar, asegurarse de que la tabla de inventario esté creada y poblada
         conn = sqlite3.connect('erp_autobuses.db')
@@ -2447,31 +2481,49 @@ class SistemaERP:
 
     def setup_tab_salidas(self, parent):
         """Configura la pestaña de historial de salidas"""
-        frame = tk.Frame(parent)
+        frame = tk.Frame(parent, bg="#FFFFFF")
         frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
         
         # Frame de filtros
-        filtros_frame = tk.Frame(frame)
+        filtros_frame = tk.Frame(frame, bg="#FFFFFF")
         filtros_frame.pack(fill=tk.X, pady=10)
         
+        # Estilo para etiquetas
+        label_style = {"bg": "#FFFFFF", "fg": "#003366", "font": ("Helvetica", 11)}
+        
         # Filtro por tipo de producto
-        tk.Label(filtros_frame, text="Tipo Producto:").pack(side=tk.LEFT, padx=5)
-        self.filtro_salida_tipo = ttk.Combobox(filtros_frame, width=15, state="readonly")
+        tk.Label(filtros_frame, text="Tipo De Producto:", **label_style).pack(side=tk.LEFT, padx=5)
+        
+        # Configurar estilo para combobox
+        style = ttk.Style()
+        style.configure("TCombobox", 
+                        font=("Helvetica", 11),
+                        background="#FFFFFF")
+        
+        self.filtro_salida_tipo = ttk.Combobox(filtros_frame, width=25, state="readonly")
         self.filtro_salida_tipo.pack(side=tk.LEFT, padx=5)
         
         # Filtro por fecha
-        tk.Label(filtros_frame, text="Desde:").pack(side=tk.LEFT, padx=5)
-        self.fecha_salida_desde = DateEntry(filtros_frame, width=12, background='darkblue', foreground='white', borderwidth=2)
+        tk.Label(filtros_frame, text="Desde:", **label_style).pack(side=tk.LEFT, padx=5)
+        self.fecha_salida_desde = DateEntry(filtros_frame, width=12, 
+                                           background='#003366', foreground='white', 
+                                           borderwidth=1, font=("Helvetica", 11))
         self.fecha_salida_desde.pack(side=tk.LEFT, padx=5)
         self.fecha_salida_desde.set_date(datetime.datetime.now() - datetime.timedelta(days=30))
         
-        tk.Label(filtros_frame, text="Hasta:").pack(side=tk.LEFT, padx=5)
-        self.fecha_salida_hasta = DateEntry(filtros_frame, width=12, background='darkblue', foreground='white', borderwidth=2)
+        tk.Label(filtros_frame, text="Hasta:", **label_style).pack(side=tk.LEFT, padx=5)
+        self.fecha_salida_hasta = DateEntry(filtros_frame, width=12, 
+                                          background='#003366', foreground='white', 
+                                          borderwidth=1, font=("Helvetica", 11))
         self.fecha_salida_hasta.pack(side=tk.LEFT, padx=5)
         self.fecha_salida_hasta.set_date(datetime.datetime.now())
         
-        # Botones (se eliminó el botón de refrescar)
-        tk.Button(filtros_frame, text="Aplicar Filtros", command=self.filtrar_salidas).pack(side=tk.LEFT, padx=5)
+        # Botón con estilo
+        btn_aplicar = tk.Button(filtros_frame, text="Aplicar Filtros", command=self.filtrar_salidas,
+                            bg="#003366", fg="#FFFFFF", font=("Helvetica", 10, "bold"),
+                            relief="flat", cursor="hand2", padx=10, pady=2,
+                            activebackground="#002244", activeforeground="#FFFFFF")
+        btn_aplicar.pack(side=tk.LEFT, padx=5)
         
         # Tabla de salidas
         columns = ("ID", "Fecha", "Tipo Producto", "Descripción", "Cantidad", "Destino", "Responsable", "Notas")
@@ -2609,31 +2661,54 @@ class SistemaERP:
     # ------ Inventario General ------
     def setup_tab_inventario(self, parent):
         """Configura la pestaña de inventario general"""
-        frame = tk.Frame(parent)
+        frame = tk.Frame(parent, bg="#FFFFFF")
         frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
         
         # Frame de filtros y controles
-        filtros_frame = tk.Frame(frame)
+        filtros_frame = tk.Frame(frame, bg="#FFFFFF")
         filtros_frame.pack(fill=tk.X, pady=10)
         
+        # Estilo para etiquetas
+        label_style = {"bg": "#FFFFFF", "fg": "#003366", "font": ("Helvetica", 11)}
+        
         # Filtros
-        tk.Label(filtros_frame, text="Tipo de producto:").pack(side=tk.LEFT, padx=5)
+        tk.Label(filtros_frame, text="Tipo De Producto:", **label_style).pack(side=tk.LEFT, padx=5)
         self.filtro_tipo = ttk.Combobox(filtros_frame, width=15, state="readonly")
         self.filtro_tipo.pack(side=tk.LEFT, padx=5)
+        self.filtro_tipo.pack(side=tk.LEFT, padx=5, ipadx=25)  
         self.filtro_tipo.bind("<<ComboboxSelected>>", self.actualizar_proveedores_por_tipo)
         
-        tk.Label(filtros_frame, text="Proveedor:").pack(side=tk.LEFT, padx=5)
+        tk.Label(filtros_frame, text="Proveedor:", **label_style).pack(side=tk.LEFT, padx=5)
         self.filtro_proveedor = ttk.Combobox(filtros_frame, width=15, state="readonly")
         self.filtro_proveedor.pack(side=tk.LEFT, padx=5)
         
-        # Botones (se eliminó el botón de refrescar)
-        tk.Button(filtros_frame, text="Aplicar Filtros", command=self.filtrar_inventario).pack(side=tk.LEFT, padx=5)
-        tk.Button(filtros_frame, text="Registrar Salida", command=self.mostrar_formulario_salida).pack(side=tk.LEFT, padx=5)
+        # Estilo de botones
+        button_style = {
+            "bg": "#003366",
+            "fg": "#FFFFFF",
+            "font": ("Helvetica", 10, "bold"),
+            "relief": "flat",
+            "cursor": "hand2",
+            "padx": 10,
+            "pady": 2,
+            "activebackground": "#002244",
+            "activeforeground": "#FFFFFF"
+        }
+        
+        # Botones
+        tk.Button(filtros_frame, text="Aplicar Filtros", command=self.filtrar_inventario, 
+                 **button_style).pack(side=tk.LEFT, padx=5)
+        tk.Button(filtros_frame, text="Registrar Salida", command=self.mostrar_formulario_salida, 
+                 **button_style).pack(side=tk.LEFT, padx=5)
         
         # Frame para resumen de inventario
-        resumen_frame = tk.Frame(frame)
-        resumen_frame.pack(fill=tk.X, pady=5)
-        self.label_resumen = tk.Label(resumen_frame, text="Total de productos: 0 | Cantidad total: 0 | Valor total: $0.00", font=("Arial", 10, "bold"))
+        resumen_frame = tk.Frame(frame, bg="#FFFFFF")
+        resumen_frame.pack(fill=tk.X, pady=10)
+        self.label_resumen = tk.Label(resumen_frame, 
+                                    text="Total de productos: 0 | Cantidad total: 0 | Valor total: $0.00", 
+                                    font=("Helvetica", 11, "bold"), 
+                                    bg="#FFFFFF", 
+                                    fg="#003366")
         self.label_resumen.pack(side=tk.LEFT)
         
         # Tabla de inventario
@@ -2918,7 +2993,6 @@ class SistemaERP:
         finally:
             conn.close()
 
-
     def mostrar_formulario_salida(self):
         """Muestra formulario para registrar salida de inventario"""
         # Verificar si hay un item seleccionado
@@ -2935,35 +3009,76 @@ class SistemaERP:
         cantidad_disponible = int(valores[3])
         proveedor = valores[7]
 
-        # Crear ventana emergente
+        # Crear ventana emergente con tamaño ajustado
         popup = tk.Toplevel(self.root)
         popup.title("Registrar Salida de Inventario")
-        popup.geometry('450x350')
+        popup.geometry('400x350')  # Ventana más compacta
         popup.grab_set()  # Hace la ventana modal
+        popup.configure(bg="#e6ecf0")  # Color de fondo general
+        popup.resizable(False, False)  # Evitar redimensionamiento
+        
+        # Centrar la ventana en la pantalla
+        ancho_ventana = 400
+        alto_ventana = 350
+        x_pos = (popup.winfo_screenwidth() // 2) - (ancho_ventana // 2)
+        y_pos = (popup.winfo_screenheight() // 2) - (alto_ventana // 2)
+        popup.geometry(f'{ancho_ventana}x{alto_ventana}+{x_pos}+{y_pos}')
 
-        frame = tk.Frame(popup)
-        frame.pack(padx=20, pady=20, fill=tk.BOTH, expand=True)
+        # Frame principal con estilo mejorado
+        frame = tk.Frame(popup, bg="#FFFFFF", bd=2, relief="ridge")
+        frame.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
 
-        # Mostrar información del producto
-        tk.Label(frame, text="Registrar Salida de Inventario", font=("Arial", 14, "bold")).grid(row=0, column=0, columnspan=2, sticky="w", pady=5)
-        tk.Label(frame, text="Producto:", font=("Arial", 10, "bold")).grid(row=1, column=0, sticky="w", pady=2)
-        tk.Label(frame, text=f"[{tipo_producto}] - {descripcion}", font=("Arial", 10)).grid(row=1, column=1, sticky="w", pady=2)
-        tk.Label(frame, text="Proveedor:", font=("Arial", 10, "bold")).grid(row=2, column=0, sticky="w", pady=2)
-        tk.Label(frame, text=proveedor, font=("Arial", 10)).grid(row=2, column=1, sticky="w", pady=2)
-        tk.Label(frame, text="Disponible:", font=("Arial", 10, "bold")).grid(row=3, column=0, sticky="w", pady=2)
-        tk.Label(frame, text=str(cantidad_disponible), font=("Arial", 10)).grid(row=3, column=1, sticky="w", pady=2)
-
-        # Campos del formulario
-        tk.Label(frame, text="Cantidad a retirar:", font=("Arial", 10)).grid(row=4, column=0, sticky="w", pady=5)
-        cantidad_entry = tk.Entry(frame, width=10, font=("Arial", 10))
-        cantidad_entry.grid(row=4, column=1, sticky="w", pady=5)
+        # Título con estilo mejorado
+        titulo_frame = tk.Frame(frame, bg="#003366", padx=5, pady=5)
+        titulo_frame.grid(row=0, column=0, columnspan=2, sticky="ew", padx=5, pady=(0, 10))
+        tk.Label(titulo_frame, text="Registrar Salida de Inventario", 
+                font=("Helvetica", 12, "bold"), fg="#FFFFFF", bg="#003366").pack(anchor="w")
+        
+        # Información del producto - Forma más compacta
+        info_frame = tk.Frame(frame, bg="#FFFFFF")
+        info_frame.grid(row=1, column=0, columnspan=2, sticky="ew", padx=10, pady=5)
+        
+        # Estilos consistentes más compactos
+        estilo_etiqueta = {"font": ("Helvetica", 10, "bold"), "fg": "#003366", "bg": "#FFFFFF"}
+        estilo_dato = {"font": ("Helvetica", 10), "bg": "#FFFFFF", "fg": "#333333"}
+        estilo_entrada = {"font": ("Helvetica", 10), "bd": 1, "relief": "solid"}
+        
+        # Primera fila - Producto y Proveedor
+        tk.Label(info_frame, text="Producto:", **estilo_etiqueta).grid(row=0, column=0, sticky="w", pady=2)
+        tk.Label(info_frame, text=f"{tipo_producto} - {descripcion}", **estilo_dato).grid(row=0, column=1, sticky="w", pady=2)
+        
+        tk.Label(info_frame, text="Proveedor:", **estilo_etiqueta).grid(row=1, column=0, sticky="w", pady=2)
+        tk.Label(info_frame, text=proveedor, **estilo_dato).grid(row=1, column=1, sticky="w", pady=2)
+        
+        tk.Label(info_frame, text="Disponible:", **estilo_etiqueta).grid(row=2, column=0, sticky="w", pady=2)
+        disponible_label = tk.Label(info_frame, text=str(cantidad_disponible), **estilo_dato)
+        disponible_label.grid(row=2, column=1, sticky="w", pady=2)
+        
+        # Separador visual
+        ttk.Separator(frame, orient="horizontal").grid(row=2, column=0, columnspan=2, sticky="ew", padx=10, pady=5)
+        
+        # Formulario de entrada compacto
+        form_frame = tk.Frame(frame, bg="#FFFFFF")
+        form_frame.grid(row=3, column=0, columnspan=2, sticky="ew", padx=10, pady=5)
+        
+        # Campos de entrada compactos
+        # Cantidad
+        tk.Label(form_frame, text="Cantidad a retirar:", **estilo_etiqueta).grid(row=0, column=0, sticky="w", pady=3)
+        cantidad_entry = tk.Entry(form_frame, width=10, **estilo_entrada)
+        cantidad_entry.grid(row=0, column=1, sticky="w", pady=3)
         cantidad_entry.insert(0, "1")
-
-        tk.Label(frame, text="Destino/Uso:", font=("Arial", 10)).grid(row=5, column=0, sticky="w", pady=5)
-        destino_entry = tk.Entry(frame, width=30, font=("Arial", 10))
-        destino_entry.grid(row=5, column=1, sticky="w", pady=5)
-
-        tk.Label(frame, text="Responsable:", font=("Arial", 10)).grid(row=6, column=0, sticky="w", pady=5)
+        
+        # Destino
+        tk.Label(form_frame, text="Destino/Uso:", **estilo_etiqueta).grid(row=1, column=0, sticky="w", pady=3)
+        destino_entry = tk.Entry(form_frame, width=30, **estilo_entrada)
+        destino_entry.grid(row=1, column=1, sticky="w", pady=3)
+        
+        # Responsable
+        tk.Label(form_frame, text="Responsable:", **estilo_etiqueta).grid(row=2, column=0, sticky="w", pady=3)
+        
+        # Estilo para combobox
+        style = ttk.Style()
+        style.configure('TCombobox', font=('Helvetica', 10))
         
         # Lista de responsables predefinidos
         responsables = [
@@ -2975,23 +3090,54 @@ class SistemaERP:
             "Jefe Proveedores", 
             "Jefe Ventas", 
             "Jefe Logística", 
-            "Jefe Taller"
         ]
         
-        responsable_combobox = ttk.Combobox(frame, values=responsables, state="readonly", width=28, font=("Arial", 10))
-        responsable_combobox.grid(row=6, column=1, sticky="w", pady=5)
+        responsable_combobox = ttk.Combobox(form_frame, values=responsables, state="readonly", width=28, 
+                                        font=("Helvetica", 10))
+        responsable_combobox.grid(row=2, column=1, sticky="w", pady=3)
         responsable_combobox.set(responsables[0])  # Establecer el primer valor por defecto
+        
+        # Notas
+        tk.Label(form_frame, text="Notas:", **estilo_etiqueta).grid(row=3, column=0, sticky="w", pady=3)
+        notas_entry = tk.Entry(form_frame, width=30, **estilo_entrada)
+        notas_entry.grid(row=3, column=1, sticky="w", pady=3)
+        
+        # Separador visual antes de los botones
+        ttk.Separator(frame, orient="horizontal").grid(row=4, column=0, columnspan=2, sticky="ew", padx=10, pady=5)
 
-        tk.Label(frame, text="Notas:", font=("Arial", 10)).grid(row=7, column=0, sticky="w", pady=5)
-        notas_entry = tk.Entry(frame, width=30, font=("Arial", 10))
-        notas_entry.grid(row=7, column=1, sticky="w", pady=5)
+        # Frame para botones con estilo mejorado
+        botones_frame = tk.Frame(frame, bg="#FFFFFF")
+        botones_frame.grid(row=5, column=0, columnspan=2, pady=10)
 
-        # Frame para botones
-        botones_frame = tk.Frame(frame)
-        botones_frame.grid(row=8, column=0, columnspan=2, pady=15)
+        # Estilo de botones mejorado pero más compactos
+        estilo_btn_primario = {
+            "bg": "#003366", 
+            "fg": "#FFFFFF", 
+            "font": ("Helvetica", 10, "bold"),
+            "activebackground": "#002244", 
+            "activeforeground": "#FFFFFF",
+            "cursor": "hand2", 
+            "relief": "raised", 
+            "padx": 12, 
+            "pady": 5,
+            "bd": 0
+        }
+        
+        estilo_btn_secundario = {
+            "bg": "#990000", 
+            "fg": "#FFFFFF", 
+            "font": ("Helvetica", 10, "bold"),
+            "activebackground": "#660000", 
+            "activeforeground": "#FFFFFF",
+            "cursor": "hand2", 
+            "relief": "raised", 
+            "padx": 12, 
+            "pady": 5,
+            "bd": 0
+        }
 
-        # Botón guardar
-        tk.Button(botones_frame, text="Registrar Salida", 
+        # Botón guardar con estilo mejorado
+        registrar_btn = tk.Button(botones_frame, text="Registrar Salida", 
                 command=lambda: self.registrar_salida_inventario(
                     id_producto, 
                     tipo_producto, 
@@ -3002,15 +3148,35 @@ class SistemaERP:
                     notas_entry.get(), 
                     cantidad_disponible, 
                     popup
-                )).pack(side=tk.LEFT, padx=5)
+                ),
+                **estilo_btn_primario)
+        registrar_btn.pack(side=tk.LEFT, padx=10)
 
-        # Botón cancelar
-        tk.Button(botones_frame, text="Cancelar", command=popup.destroy).pack(side=tk.LEFT, padx=5)
+        # Botón cancelar con estilo mejorado
+        cancelar_btn = tk.Button(botones_frame, text="Cancelar", command=popup.destroy,
+                **estilo_btn_secundario)
+        cancelar_btn.pack(side=tk.LEFT, padx=10)
+        
+        # Focus en el campo de cantidad
+        cantidad_entry.focus_set()
+        
+        # Agregar atajos de teclado
+        popup.bind("<Return>", lambda event: registrar_btn.invoke())
+        popup.bind("<Escape>", lambda event: popup.destroy())
 
     def registrar_salida_inventario(self, id_producto, tipo_producto, descripcion, cantidad, destino, responsable, notas, cantidad_disponible, popup):
         """Registra una salida de inventario en la base de datos"""
-        if not all([cantidad, destino, responsable]):
-            messagebox.showwarning("Advertencia", "Los campos Cantidad, Destino y Responsable son obligatorios")
+        # Validaciones mejoradas
+        if not cantidad.strip():
+            messagebox.showwarning("Advertencia", "El campo Cantidad es obligatorio")
+            return
+            
+        if not destino.strip():
+            messagebox.showwarning("Advertencia", "El campo Destino es obligatorio")
+            return
+            
+        if not responsable:
+            messagebox.showwarning("Advertencia", "El campo Responsable es obligatorio")
             return
         
         try:
@@ -3020,10 +3186,17 @@ class SistemaERP:
                 return
             
             if cantidad_int > cantidad_disponible:
-                messagebox.showwarning("Advertencia", "No hay suficiente cantidad disponible")
+                messagebox.showwarning("Advertencia", "No hay suficiente cantidad disponible.\n" +
+                                    f"Disponible: {cantidad_disponible}, Solicitado: {cantidad_int}")
                 return
         except ValueError:
             messagebox.showerror("Error", "La cantidad debe ser un número entero")
+            return
+        
+        # Mostrar confirmación antes de proceder
+        confirmar = messagebox.askyesno("Confirmar salida", 
+                                    f"¿Confirma la salida de {cantidad_int} unidades de '{tipo_producto} - {descripcion}'?")
+        if not confirmar:
             return
         
         conn = sqlite3.connect('erp_autobuses.db')
@@ -3046,15 +3219,18 @@ class SistemaERP:
                 )
             """)
             
-            # Registrar la salida
+            # Registrar la salida con fecha y hora actual
             fecha = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             cursor.execute("""
                 INSERT INTO salidas_inventario (producto_id, fecha, tipo_producto, descripcion, cantidad, destino, responsable, notas)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """, (id_producto, fecha, tipo_producto, descripcion, cantidad_int, destino, responsable, notas))
             
+            # Actualizar inventario (en caso de tener una tabla separada para control de stock)
+            # Aquí se implementaría si fuera necesario
+            
             conn.commit()
-            messagebox.showinfo("Éxito", "Salida registrada correctamente")
+            messagebox.showinfo("Éxito", f"Salida de {cantidad_int} unidades registrada correctamente")
             popup.destroy()
             
             # Actualizar todas las vistas afectadas
@@ -3085,7 +3261,7 @@ class SistemaERP:
         
         # Filtro por tipo de producto
         tk.Label(filtros_frame, text="Tipo Producto:").pack(side=tk.LEFT, padx=5)
-        self.filtro_mov_tipo = ttk.Combobox(filtros_frame, width=15, state="readonly")
+        self.filtro_mov_tipo = ttk.Combobox(filtros_frame, width=10, state="readonly")
         self.filtro_mov_tipo.pack(side=tk.LEFT, padx=5)
         
         # Filtro por fecha
