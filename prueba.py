@@ -3712,52 +3712,90 @@ class SistemaERP:
         # Frame principal
         frame = tk.Frame(parent)
         frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
-    
+        
         # Título
         tk.Label(frame, text="Registrar Nueva Compra", font=("Arial", 14)).pack(pady=10)
-    
+        
         # Formulario
         form_frame = tk.Frame(frame)
         form_frame.pack(pady=10)
 
-        # Tipo de producto
-        tk.Label(form_frame, text="Tipo de Producto:").grid(row=1, column=0, sticky="w", pady=5)
-        self.tipo_producto_combobox = ttk.Combobox(form_frame, values=["Autobús", "Computadora", "Productos de limpieza", "Otros"], width=27)
-        self.tipo_producto_combobox.grid(row=1, column=1, pady=5)
-    
-        # Proveedor
+        # Proveedor (primero para filtrar productos)
         tk.Label(form_frame, text="Proveedor:").grid(row=0, column=0, sticky="w", pady=5)
-        self.proveedor_combobox = ttk.Combobox(form_frame, width=27)
+        self.proveedor_combobox = ttk.Combobox(form_frame, width=27, state="readonly")
         self.proveedor_combobox.grid(row=0, column=1, pady=5)
-    
+        self.proveedor_combobox.bind("<<ComboboxSelected>>", self.actualizar_tipos_producto)
+
+        # Tipo de producto (se actualiza según proveedor)
+        tk.Label(form_frame, text="Tipo de Producto:").grid(row=1, column=0, sticky="w", pady=5)
+        self.tipo_producto_combobox = ttk.Combobox(form_frame, width=27, state="disabled")
+        self.tipo_producto_combobox.grid(row=1, column=1, pady=5)
+
         # Descripción
         tk.Label(form_frame, text="Descripción:").grid(row=2, column=0, sticky="w", pady=5)
         self.descripcion_compra_entry = tk.Entry(form_frame, width=30)
         self.descripcion_compra_entry.grid(row=2, column=1, pady=5)
-    
+        
         # Cantidad
         tk.Label(form_frame, text="Cantidad:").grid(row=3, column=0, sticky="w", pady=5)
         self.cantidad_compra_entry = tk.Entry(form_frame, width=30)
         self.cantidad_compra_entry.grid(row=3, column=1, pady=5)
-    
+        
         # Precio unitario
         tk.Label(form_frame, text="Precio Unitario:").grid(row=4, column=0, sticky="w", pady=5)
         self.precio_unitario_entry = tk.Entry(form_frame, width=30)
         self.precio_unitario_entry.grid(row=4, column=1, pady=5)
-    
-        # Total (calculado automáticamente)
+        
+        # Total
         tk.Label(form_frame, text="Total:").grid(row=5, column=0, sticky="w", pady=5)
         self.total_compra_label = tk.Label(form_frame, text="$0.00")
         self.total_compra_label.grid(row=5, column=1, pady=5, sticky="w")
-    
-        # Botón para calcular total
+        
+        # Botones
         tk.Button(form_frame, text="Calcular Total", command=self.calcular_total_compra).grid(row=6, column=1, pady=5, sticky="e")
-    
-        # Botón para registrar compra
         tk.Button(frame, text="Registrar Compra", command=self.registrar_compra).pack(pady=20)
-    
-        # Cargar proveedores en el combobox
+        
+        # Cargar proveedores
         self.cargar_proveedores_combobox()
+
+    def actualizar_tipos_producto(self, event=None):
+        """Actualiza los tipos de producto según el proveedor seleccionado"""
+        # Obtener el ID del proveedor seleccionado
+        seleccion = self.proveedor_combobox.get()
+        if not seleccion or "-" not in seleccion:
+            self.tipo_producto_combobox['values'] = []
+            self.tipo_producto_combobox.set('')
+            self.tipo_producto_combobox['state'] = 'disabled'
+            return
+        
+        proveedor_id = int(seleccion.split("-")[0].strip())
+        
+        # Consultar los tipos de producto que ofrece este proveedor
+        conn = sqlite3.connect('erp_autobuses.db')
+        cursor = conn.cursor()
+        try:
+            cursor.execute("""
+                SELECT DISTINCT tipo_producto 
+                FROM compras 
+                WHERE proveedor_id = ?
+                ORDER BY tipo_producto
+            """, (proveedor_id,))
+            
+            tipos = [row[0] for row in cursor.fetchall()]
+            
+            # Si no hay registros previos, mostrar todos los tipos
+            if not tipos:
+                tipos = ["Autobús", "Computadora", "Productos de limpieza", "Otros"]
+            
+            self.tipo_producto_combobox['values'] = tipos
+            self.tipo_producto_combobox['state'] = 'readonly'
+            self.tipo_producto_combobox.set('')
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudieron cargar los tipos de producto: {str(e)}")
+        finally:
+            conn.close()
+
 
     def calcular_total_compra(self):
         try:
@@ -3931,6 +3969,7 @@ class SistemaERP:
             conn.close()
 
 # =================== MÓDULO DE PROVEEDORES ============================
+# =================== MÓDULO DE PROVEEDORES ============================
     def mostrar_modulo_proveedores(self):
         # Limpiar ventana
         for widget in self.root.winfo_children():
@@ -3961,6 +4000,9 @@ class SistemaERP:
     
         # Botón para agregar proveedor
         tk.Button(controls_frame, text="Agregar Proveedor", command=self.mostrar_formulario_proveedor).pack(side=tk.LEFT, padx=5)
+    
+        # Botón para eliminar proveedor
+        tk.Button(controls_frame, text="Eliminar Proveedor", command=self.eliminar_proveedor_seleccionado).pack(side=tk.LEFT, padx=5)
     
         # Botón para refrescar
         tk.Button(controls_frame, text="Refrescar", command=lambda: self.cargar_proveedores(self.tree_proveedores)).pack(side=tk.LEFT, padx=5)
@@ -4074,6 +4116,41 @@ class SistemaERP:
             messagebox.showerror("Error", f"Error al cargar proveedores: {str(e)}")
         finally:
             conn.close()
+
+    def eliminar_proveedor_seleccionado(self):
+        # Obtener el item seleccionado
+        seleccion = self.tree_proveedores.selection()
+        
+        if not seleccion:
+            messagebox.showwarning("Advertencia", "Por favor seleccione un proveedor para eliminar")
+            return
+            
+        # Obtener el ID del proveedor seleccionado
+        item = self.tree_proveedores.item(seleccion[0])
+        id_proveedor = item['values'][0]
+        nombre_proveedor = item['values'][1]
+        
+        # Confirmar eliminación
+        confirmacion = messagebox.askyesno(
+            "Confirmar Eliminación",
+            f"¿Está seguro que desea eliminar al proveedor: {nombre_proveedor}?"
+        )
+        
+        if confirmacion:
+            # Eliminar de la base de datos
+            conn = sqlite3.connect('erp_autobuses.db')
+            cursor = conn.cursor()
+            
+            try:
+                cursor.execute("DELETE FROM proveedores WHERE id = ?", (id_proveedor,))
+                conn.commit()
+                messagebox.showinfo("Éxito", "Proveedor eliminado correctamente")
+                self.cargar_proveedores(self.tree_proveedores)
+            except Exception as e:
+                messagebox.showerror("Error", f"Error al eliminar proveedor: {str(e)}")
+                conn.rollback()
+            finally:
+                conn.close()
 
 # =================== MÓDULO DE VENTAS =================================
     def mostrar_modulo_ventas(self):
