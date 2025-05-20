@@ -4162,53 +4162,179 @@ class SistemaERP:
         self.actualizar_lista_proveedores()
 
     def mostrar_formulario_proveedor(self):
+        """Muestra formulario para agregar/editar proveedor con diseño centrado y alineado"""
         # Crear ventana emergente
         popup = tk.Toplevel(self.root)
         popup.title("Agregar Proveedor")
-        popup.geometry("400x350")
-        popup.configure(bg='#e6ecf0')
-        popup.resizable(False, False)
+        popup.geometry('500x550')  # Tamaño adecuado para el contenido
+        popup.grab_set()  # Hace la ventana modal
+        popup.configure(bg="#e6ecf0")  # Color de fondo general
+        popup.resizable(False, False)  # Evitar redimensionamiento
         
-        # Frame principal
-        frame = tk.Frame(popup, bg='white', bd=2, relief='ridge')
-        frame.pack(padx=20, pady=20, fill=tk.BOTH, expand=True)
+        # Centrar la ventana en la pantalla
+        ancho_ventana = 500
+        alto_ventana = 550
+        x_pos = (popup.winfo_screenwidth() // 2) - (ancho_ventana // 2)
+        y_pos = (popup.winfo_screenheight() // 2) - (alto_ventana // 2)
+        popup.geometry(f'{ancho_ventana}x{alto_ventana}+{x_pos}+{y_pos}')
+
+        # Frame principal que contendrá todo centrado
+        main_frame = tk.Frame(popup, bg="#e6ecf0")
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
         
-        # Campos del formulario
-        tk.Label(frame, text="Nombre:", font=('Arial', 10), bg='white', fg='#003366').grid(row=0, column=0, sticky="w", pady=5, padx=10)
-        nombre_entry = tk.Entry(frame, width=30, font=('Arial', 10), relief='solid', bd=1)
-        nombre_entry.grid(row=0, column=1, pady=5, padx=10)
+        # Frame de contenido (este será nuestro bloque centrado)
+        content_frame = tk.Frame(main_frame, bg="#FFFFFF", bd=2, relief="ridge")
+        content_frame.pack(fill=tk.BOTH, expand=True)
         
-        tk.Label(frame, text="Tipo:", font=('Arial', 10), bg='white', fg='#003366').grid(row=1, column=0, sticky="w", pady=5, padx=10)
-        tipo_combobox = ttk.Combobox(frame, values=["Autobuses", "Computadoras", "Productos de limpieza", "Otros"], 
-                                   width=27, font=('Arial', 10))
-        tipo_combobox.grid(row=1, column=1, pady=5, padx=10)
+        # Frame para el título (ocupa todo el ancho)
+        title_frame = tk.Frame(content_frame, bg="#003366")
+        title_frame.pack(fill=tk.X, pady=(0, 20))
         
-        tk.Label(frame, text="Contacto:", font=('Arial', 10), bg='white', fg='#003366').grid(row=2, column=0, sticky="w", pady=5, padx=10)
-        contacto_entry = tk.Entry(frame, width=30, font=('Arial', 10), relief='solid', bd=1)
-        contacto_entry.grid(row=2, column=1, pady=5, padx=10)
+        # Título del formulario
+        tk.Label(title_frame, 
+                text="Formulario de Proveedor", 
+                font=("Helvetica", 14, "bold"), 
+                fg="#FFFFFF", 
+                bg="#003366",
+                padx=10,
+                pady=10).pack()
         
-        tk.Label(frame, text="Teléfono:", font=('Arial', 10), bg='white', fg='#003366').grid(row=3, column=0, sticky="w", pady=5, padx=10)
-        telefono_entry = tk.Entry(frame, width=30, font=('Arial', 10), relief='solid', bd=1)
-        telefono_entry.grid(row=3, column=1, pady=5, padx=10)
+        # Frame para el formulario (este será nuestro contenedor centrado)
+        form_container = tk.Frame(content_frame, bg="#FFFFFF")
+        form_container.pack(expand=True, padx=40, pady=10)
         
-        tk.Label(frame, text="Email:", font=('Arial', 10), bg='white', fg='#003366').grid(row=4, column=0, sticky="w", pady=5, padx=10)
-        email_entry = tk.Entry(frame, width=30, font=('Arial', 10), relief='solid', bd=1)
-        email_entry.grid(row=4, column=1, pady=5, padx=10)
+        # Frame que contendrá los campos del formulario (alineación izquierda dentro del centro)
+        form_fields = tk.Frame(form_container, bg="#FFFFFF")
+        form_fields.pack()
         
-        # Botón para guardar
-        save_btn = tk.Button(frame, text="Guardar", 
-                           command=lambda: self.guardar_proveedor(
-                               nombre_entry.get(),
-                               tipo_combobox.get(),
-                               contacto_entry.get(),
-                               telefono_entry.get(),
-                               email_entry.get(),
-                               popup
-                           ),
-                           bg='#003366', fg='white', 
-                           font=('Arial', 10, 'bold'),
-                           relief='flat', activebackground='#002244')
-        save_btn.grid(row=5, columnspan=2, pady=20)
+        # Estilos consistentes
+        estilo_etiqueta = {
+            "font": ("Helvetica", 10, "bold"), 
+            "fg": "#003366", 
+            "bg": "#FFFFFF",
+            "anchor": "w",
+            "padx": 5,
+            "pady": 5,
+            "width": 12  # Ancho fijo para alinear
+        }
+        
+        estilo_entrada = {
+            "font": ("Helvetica", 10), 
+            "bd": 1, 
+            "relief": "solid",
+            "highlightthickness": 1,
+            "highlightbackground": "#cccccc",
+            "highlightcolor": "#003366",
+            "width": 30
+        }
+        
+        # Configuración específica para el Combobox
+        style = ttk.Style()
+        style.configure('TCombobox', 
+                    font=('Helvetica', 10),
+                    borderwidth=1,
+                    relief="solid",
+                    padding=5,
+                    width=28)  # Ajustado para igualar el ancho de las entradas
+        
+        # Campos del formulario (alineados a la izquierda dentro del bloque centrado)
+        
+        # Nombre
+        tk.Label(form_fields, text="Nombre:", **estilo_etiqueta).grid(row=0, column=0, sticky="w")
+        nombre_entry = tk.Entry(form_fields, **estilo_entrada)
+        nombre_entry.grid(row=0, column=1, pady=5, sticky="w")
+        
+        # Tipo (Lista desplegable)
+        tk.Label(form_fields, text="Tipo:", **estilo_etiqueta).grid(row=1, column=0, sticky="w")
+        
+        tipo_combobox = ttk.Combobox(
+            form_fields, 
+            values=["Autobuses", "Computadoras", "Productos de limpieza", "Otros"], 
+            state="readonly",
+            style='TCombobox'
+        )
+        tipo_combobox.grid(row=1, column=1, pady=5, sticky="w", ipady=3)  # ipady para altura similar
+        tipo_combobox.set("Autobuses")  # Valor por defecto
+        
+        # Contacto
+        tk.Label(form_fields, text="Contacto:", **estilo_etiqueta).grid(row=2, column=0, sticky="w")
+        contacto_entry = tk.Entry(form_fields, **estilo_entrada)
+        contacto_entry.grid(row=2, column=1, pady=5, sticky="w")
+        
+        # Teléfono
+        tk.Label(form_fields, text="Teléfono:", **estilo_etiqueta).grid(row=3, column=0, sticky="w")
+        telefono_entry = tk.Entry(form_fields, **estilo_entrada)
+        telefono_entry.grid(row=3, column=1, pady=5, sticky="w")
+        
+        # Email
+        tk.Label(form_fields, text="Email:", **estilo_etiqueta).grid(row=4, column=0, sticky="w")
+        email_entry = tk.Entry(form_fields, **estilo_entrada)
+        email_entry.grid(row=4, column=1, pady=5, sticky="w")
+        
+        # Frame para botones (centrados abajo del formulario)
+        button_frame = tk.Frame(content_frame, bg="#FFFFFF", pady=20)
+        button_frame.pack(fill=tk.X)
+        
+        # Contenedor interno para centrar los botones
+        button_container = tk.Frame(button_frame, bg="#FFFFFF")
+        button_container.pack()
+        
+        # Estilo de botones
+        estilo_btn_primario = {
+            "bg": "#003366", 
+            "fg": "#FFFFFF", 
+            "font": ("Helvetica", 10, "bold"),
+            "activebackground": "#002244", 
+            "activeforeground": "#FFFFFF",
+            "cursor": "hand2", 
+            "relief": "raised", 
+            "padx": 20, 
+            "pady": 8,
+            "bd": 0,
+            "width": 12
+        }
+        
+        estilo_btn_secundario = {
+            "bg": "#990000", 
+            "fg": "#FFFFFF", 
+            "font": ("Helvetica", 10, "bold"),
+            "activebackground": "#660000", 
+            "activeforeground": "#FFFFFF",
+            "cursor": "hand2", 
+            "relief": "raised", 
+            "padx": 20, 
+            "pady": 8,
+            "bd": 0,
+            "width": 12
+        }
+
+        # Botón guardar
+        guardar_btn = tk.Button(button_container, 
+                            text="Guardar", 
+                            command=lambda: self.guardar_proveedor(
+                                nombre_entry.get(),
+                                tipo_combobox.get(),
+                                contacto_entry.get(),
+                                telefono_entry.get(),
+                                email_entry.get(),
+                                popup
+                            ),
+                            **estilo_btn_primario)
+        guardar_btn.pack(side=tk.LEFT, padx=10)
+
+        # Botón cancelar
+        cancelar_btn = tk.Button(button_container, 
+                            text="Cancelar", 
+                            command=popup.destroy,
+                            **estilo_btn_secundario)
+        cancelar_btn.pack(side=tk.LEFT, padx=10)
+        
+        # Focus en el primer campo
+        nombre_entry.focus_set()
+        
+        # Agregar atajos de teclado
+        popup.bind("<Return>", lambda event: guardar_btn.invoke())
+        popup.bind("<Escape>", lambda event: popup.destroy())
 
     def guardar_proveedor(self, nombre, tipo, contacto, telefono, email, popup):
         # Validar datos
