@@ -4867,11 +4867,18 @@ class SistemaERP:
         style = ttk.Style(clientes_window)
         style.configure('Clientes.TFrame', background='#e6ecf0')
         style.configure('Clientes.TLabel', background='#e6ecf0', font=('Arial', 11))
-        style.configure('Clientes.TButton', font=('Arial', 10, 'bold'), relief='flat',
-                    background='#003366', foreground='white')
-        style.map('Clientes.TButton',
+        
+        # Estilo para botones primarios (EXACTAMENTE como lo especificaste)
+        style.configure('Azul.TButton', 
+                    font=('Arial', 10, 'bold'),
+                    relief='flat',
+                    background='#003366',
+                    foreground='white')
+        style.map('Azul.TButton',
                 background=[('active', '#002244'), ('!disabled', '#003366')],
                 foreground=[('!disabled', 'white')])
+        
+        # Estilo para el Treeview
         style.configure('Clientes.Treeview', font=('Arial', 10), rowheight=25)
         style.configure('Clientes.Treeview.Heading', font=('Arial', 10, 'bold'))
         
@@ -4879,22 +4886,36 @@ class SistemaERP:
         main_frame = ttk.Frame(clientes_window, style='Clientes.TFrame')
         main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
         
-        # Barra de búsqueda
+        # Barra de búsqueda con botones
         search_frame = ttk.Frame(main_frame, style='Clientes.TFrame')
         search_frame.pack(fill=tk.X, pady=10)
         
-        ttk.Label(search_frame, text="Buscar cliente:", style='Clientes.TLabel').pack(side=tk.LEFT)
+        # Elementos de búsqueda
+        ttk.Label(search_frame, text="Buscar cliente:", style='Clientes.TLabel').pack(side=tk.LEFT, padx=(0,5))
+        
         self.busqueda_cliente_entry = ttk.Entry(search_frame, width=40, font=('Arial', 11))
         self.busqueda_cliente_entry.pack(side=tk.LEFT, padx=5)
         
-        # Botón de búsqueda con estilo consistente
-        search_btn = ttk.Button(search_frame, text="Buscar", command=self.buscar_clientes, 
-                            style='Clientes.TButton')
+        # Botón de búsqueda (ESTILO EXACTO)
+        search_btn = ttk.Button(search_frame, 
+                            text="Buscar", 
+                            command=self.buscar_clientes, 
+                            style='Azul.TButton')
         search_btn.pack(side=tk.LEFT, padx=5)
+        
+        # Botón de ver detalles (ESTILO EXACTO)
+        detail_btn = ttk.Button(search_frame, 
+                            text="Ver Detalles", 
+                            command=self.mostrar_detalle_cliente, 
+                            style='Azul.TButton')
+        detail_btn.pack(side=tk.LEFT, padx=5)
         
         # Treeview para mostrar clientes
         columns = ("ID", "Nombre", "Apellidos", "Boletos Comprados", "Última Compra", "Total Gastado")
-        self.clientes_tree = ttk.Treeview(main_frame, columns=columns, show="headings", style='Clientes.Treeview')
+        self.clientes_tree = ttk.Treeview(main_frame, 
+                                        columns=columns, 
+                                        show="headings", 
+                                        style='Clientes.Treeview')
         
         # Configurar columnas
         for col in columns:
@@ -4911,16 +4932,6 @@ class SistemaERP:
         self.clientes_tree.configure(yscroll=scrollbar.set)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         self.clientes_tree.pack(fill=tk.BOTH, expand=True, pady=10)
-        
-        # Frame para botones inferiores
-        button_frame = ttk.Frame(main_frame, style='Clientes.TFrame')
-        button_frame.pack(fill=tk.X, pady=10)
-        
-        # Botón para ver detalles con estilo consistente
-        detail_btn = ttk.Button(button_frame, text="Ver Detalles", 
-                            command=self.mostrar_detalle_cliente, 
-                            style='Clientes.TButton')
-        detail_btn.pack(side=tk.LEFT, padx=5)
         
         # Cargar todos los clientes inicialmente
         self.cargar_todos_clientes()
