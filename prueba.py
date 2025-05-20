@@ -3953,57 +3953,107 @@ class SistemaERP:
         frame = tk.Frame(parent, bg='#FFFFFF', bd=2, relief='ridge')
         frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
     
-        # Controles superiores
+        # Frame de controles con filtros
         controls_frame = tk.Frame(frame, bg='#FFFFFF')
         controls_frame.pack(fill=tk.X, pady=10, padx=10)
     
-        # Botón para refrescar
-        tk.Button(controls_frame, text="Refrescar", 
-                command=lambda: self.cargar_historial_compras(self.tree_compras),
-                bg='#003366', fg='#FFFFFF', font=('Arial', 10, 'bold'),
-                relief='flat', activebackground='#002244').pack(side=tk.LEFT, padx=5)
-    
-        # Treeview para mostrar compras
-        style = ttk.Style()
-        style.configure("Treeview.Heading", font=('Arial', 10, 'bold'), foreground='#003366')
-        style.configure("Treeview", font=('Arial', 10), rowheight=25)
+        # Filtro por tipo de producto
+        tk.Label(controls_frame, text="Filtrar por tipo:", 
+                bg='#FFFFFF', fg='#003366', font=('Arial', 10)).pack(side=tk.LEFT, padx=5)
         
+        self.filtro_tipo = ttk.Combobox(controls_frame, 
+                                      values=["Todos", "Autobús", "Computadora", "Productos de limpieza", "Otros"],
+                                      state="readonly",
+                                      font=('Arial', 10))
+        self.filtro_tipo.set("Todos")
+        self.filtro_tipo.pack(side=tk.LEFT, padx=5)
+        self.filtro_tipo.bind("<<ComboboxSelected>>", lambda e: self.actualizar_historial())
+        
+        # Botón para limpiar filtro
+        tk.Button(controls_frame, text="Limpiar Filtro", 
+                command=self.limpiar_filtro,
+                bg='#990000', fg='#FFFFFF', font=('Arial', 10, 'bold'),
+                relief='flat', activebackground='#660000').pack(side=tk.LEFT, padx=10)
+    
+        # Frame para el Treeview y scrollbars
+        tree_frame = tk.Frame(frame, bg='#FFFFFF')
+        tree_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
+        
+        # Configurar estilo del Treeview
+        style = ttk.Style()
+        style.configure("Treeview.Heading", 
+                      font=('Arial', 10, 'bold'), 
+                      foreground='#003366',
+                      background='#e6ecf0')
+        style.configure("Treeview", 
+                      font=('Arial', 10), 
+                      rowheight=25,
+                      fieldbackground='#FFFFFF',
+                      background='#FFFFFF')
+        style.map("Treeview", 
+                background=[('selected', '#003366')],
+                foreground=[('selected', '#FFFFFF')])
+        
+        # Columnas del Treeview
         columns = ("ID", "Fecha", "Proveedor", "Tipo", "Descripción", "Cantidad", "Precio Unitario", "Total")
-        self.tree_compras = ttk.Treeview(frame, columns=columns, show="headings", style="Treeview")
-    
-        # Configurar columnas
-        for col in columns:
+        self.tree_compras = ttk.Treeview(tree_frame, columns=columns, show="headings", style="Treeview")
+        
+        # Configurar columnas (sin centrado)
+        col_widths = [50, 120, 150, 100, 200, 80, 100, 100]
+        for col, width in zip(columns, col_widths):
             self.tree_compras.heading(col, text=col)
-            self.tree_compras.column(col, width=100)
-    
-        self.tree_compras.pack(fill=tk.BOTH, expand=True, pady=10, padx=10)
-    
-        # Scrollbar
-        scrollbar = ttk.Scrollbar(frame, orient="vertical", command=self.tree_compras.yview)
-        self.tree_compras.configure(yscrollcommand=scrollbar.set)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-    
-        # Cargar datos
-        self.cargar_historial_compras(self.tree_compras)
+            self.tree_compras.column(col, width=width)  # Eliminado anchor=tk.CENTER
+        
+        # Scrollbars
+        vsb = ttk.Scrollbar(tree_frame, orient="vertical", command=self.tree_compras.yview)
+        hsb = ttk.Scrollbar(tree_frame, orient="horizontal", command=self.tree_compras.xview)
+        self.tree_compras.configure(yscrollcommand=vsb.set, xscrollcommand=hsb.set)
+        
+        # Layout
+        self.tree_compras.grid(row=0, column=0, sticky="nsew")
+        vsb.grid(row=0, column=1, sticky="ns")
+        hsb.grid(row=1, column=0, sticky="ew")
+        
+        tree_frame.grid_rowconfigure(0, weight=1)
+        tree_frame.grid_columnconfigure(0, weight=1)
+        
+        # Cargar datos iniciales
+        self.actualizar_historial()
 
-    def cargar_historial_compras(self, tree):
+    def actualizar_historial(self):
+        """Actualiza el historial aplicando el filtro seleccionado"""
+        # Obtener valor del filtro
+        tipo = self.filtro_tipo.get()
+        
+        # Construir la consulta SQL
+        query = """
+            SELECT c.id, c.fecha, p.nombre, c.tipo_producto, c.descripcion, 
+                   c.cantidad, c.precio_unitario, c.total 
+            FROM compras c 
+            JOIN proveedores p ON c.proveedor_id = p.id 
+        """
+        
+        # Aplicar filtro si no es "Todos"
+        if tipo != "Todos":
+            query += " WHERE c.tipo_producto = ?"
+            params = [tipo]
+        else:
+            params = []
+        
+        query += " ORDER BY c.fecha DESC LIMIT 100"
+        
         # Limpiar treeview
-        for item in tree.get_children():
-            tree.delete(item)
-    
-        # Cargar compras de la base de datos
+        for item in self.tree_compras.get_children():
+            self.tree_compras.delete(item)
+        
+        # Ejecutar consulta
         conn = sqlite3.connect('erp_autobuses.db')
         cursor = conn.cursor()
+        
         try:
-            cursor.execute("""
-                SELECT c.id, c.fecha, p.nombre, c.tipo_producto, c.descripcion, c.cantidad, c.precio_unitario, c.total 
-                FROM compras c 
-                JOIN proveedores p ON c.proveedor_id = p.id 
-                ORDER BY c.fecha DESC 
-                LIMIT 100 
-            """)
+            cursor.execute(query, params)
             for row in cursor.fetchall():
-                tree.insert("", tk.END, values=(
+                self.tree_compras.insert("", tk.END, values=(
                     row[0], 
                     row[1], 
                     row[2], 
@@ -4014,9 +4064,14 @@ class SistemaERP:
                     f"${row[7]:.2f}"
                 ))
         except Exception as e:
-            messagebox.showerror("Error", f"Error al cargar historial de compras: {str(e)}")
+            messagebox.showerror("Error", f"Error al cargar historial: {str(e)}")
         finally:
             conn.close()
+
+    def limpiar_filtro(self):
+        """Restablece el filtro a su valor por defecto"""
+        self.filtro_tipo.set("Todos")
+        self.actualizar_historial()
 
 # =================== MÓDULO DE PROVEEDORES ============================
 # =================== MÓDULO DE PROVEEDORES ============================
