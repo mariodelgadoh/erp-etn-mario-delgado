@@ -4863,54 +4863,57 @@ class SistemaERP:
         clientes_window.geometry("900x700")
         clientes_window.configure(bg='#e6ecf0')
         
-        # Configurar estilo para la ventana de clientes
-        style = ttk.Style(clientes_window)
-        style.configure('Clientes.TFrame', background='#e6ecf0')
-        style.configure('Clientes.TLabel', background='#e6ecf0', font=('Arial', 11))
-        
-        # Estilo para botones primarios (EXACTAMENTE como lo especificaste)
-        style.configure('Azul.TButton', 
-                    font=('Arial', 10, 'bold'),
-                    relief='flat',
-                    background='#003366',
-                    foreground='white')
-        style.map('Azul.TButton',
-                background=[('active', '#002244'), ('!disabled', '#003366')],
-                foreground=[('!disabled', 'white')])
-        
-        # Estilo para el Treeview
-        style.configure('Clientes.Treeview', font=('Arial', 10), rowheight=25)
-        style.configure('Clientes.Treeview.Heading', font=('Arial', 10, 'bold'))
-        
         # Frame principal
-        main_frame = ttk.Frame(clientes_window, style='Clientes.TFrame')
+        main_frame = tk.Frame(clientes_window, bg='#e6ecf0')
         main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
         
         # Barra de búsqueda con botones
-        search_frame = ttk.Frame(main_frame, style='Clientes.TFrame')
+        search_frame = tk.Frame(main_frame, bg='#e6ecf0')
         search_frame.pack(fill=tk.X, pady=10)
         
         # Elementos de búsqueda
-        ttk.Label(search_frame, text="Buscar cliente:", style='Clientes.TLabel').pack(side=tk.LEFT, padx=(0,5))
+        tk.Label(search_frame, text="Buscar cliente:", 
+                bg='#e6ecf0', fg='#003366', font=('Arial', 11)).pack(side=tk.LEFT, padx=(0,5))
         
-        self.busqueda_cliente_entry = ttk.Entry(search_frame, width=40, font=('Arial', 11))
+        self.busqueda_cliente_entry = tk.Entry(search_frame, width=40, font=('Arial', 11), bd=1, relief='solid')
         self.busqueda_cliente_entry.pack(side=tk.LEFT, padx=5)
         
-        # Botón de búsqueda (ESTILO EXACTO)
-        search_btn = ttk.Button(search_frame, 
+        # Botón de búsqueda (ESTILO EXACTO como lo pediste)
+        search_btn = tk.Button(search_frame, 
                             text="Buscar", 
-                            command=self.buscar_clientes, 
-                            style='Azul.TButton')
+                            command=self.buscar_clientes,
+                            bg='#003366',
+                            fg='white',
+                            font=('Arial', 10, 'bold'),
+                            relief='flat',
+                            activebackground='#002244',
+                            activeforeground='white')
         search_btn.pack(side=tk.LEFT, padx=5)
         
-        # Botón de ver detalles (ESTILO EXACTO)
-        detail_btn = ttk.Button(search_frame, 
+        # Botón de ver detalles (ESTILO EXACTO como lo pediste)
+        detail_btn = tk.Button(search_frame,
                             text="Ver Detalles", 
-                            command=self.mostrar_detalle_cliente, 
-                            style='Azul.TButton')
+                            command=self.mostrar_detalle_cliente,
+                            bg='#003366',
+                            fg='white',
+                            font=('Arial', 10, 'bold'),
+                            relief='flat',
+                            activebackground='#002244',
+                            activeforeground='white')
         detail_btn.pack(side=tk.LEFT, padx=5)
         
-        # Treeview para mostrar clientes
+        # Treeview para mostrar clientes (se mantiene ttk.Treeview)
+        style = ttk.Style()
+        style.configure("Clientes.Treeview", 
+                    font=('Arial', 10), 
+                    rowheight=25,
+                    background='white',
+                    fieldbackground='white')
+        style.configure("Clientes.Treeview.Heading", 
+                    font=('Arial', 10, 'bold'),
+                    background='#e6ecf0',
+                    foreground='#003366')
+        
         columns = ("ID", "Nombre", "Apellidos", "Boletos Comprados", "Última Compra", "Total Gastado")
         self.clientes_tree = ttk.Treeview(main_frame, 
                                         columns=columns, 
