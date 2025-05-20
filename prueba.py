@@ -3190,7 +3190,7 @@ class SistemaERP:
             conn.close()
 
     def mostrar_formulario_salida(self):
-        """Muestra formulario para registrar salida de inventario"""
+        """Muestra formulario para registrar salida de inventario con diseño centrado y alineado"""
         # Verificar si hay un item seleccionado
         seleccion = self.tree_inventario.selection()
         if not seleccion:
@@ -3205,76 +3205,116 @@ class SistemaERP:
         cantidad_disponible = int(valores[3])
         proveedor = valores[7]
 
-        # Crear ventana emergente con tamaño ajustado
+        # Crear ventana emergente
         popup = tk.Toplevel(self.root)
         popup.title("Registrar Salida de Inventario")
-        popup.geometry('400x350')  # Ventana más compacta
+        popup.geometry('500x550')  # Tamaño similar al de proveedores
         popup.grab_set()  # Hace la ventana modal
         popup.configure(bg="#e6ecf0")  # Color de fondo general
         popup.resizable(False, False)  # Evitar redimensionamiento
         
         # Centrar la ventana en la pantalla
-        ancho_ventana = 400
-        alto_ventana = 350
+        ancho_ventana = 500
+        alto_ventana = 550
         x_pos = (popup.winfo_screenwidth() // 2) - (ancho_ventana // 2)
         y_pos = (popup.winfo_screenheight() // 2) - (alto_ventana // 2)
         popup.geometry(f'{ancho_ventana}x{alto_ventana}+{x_pos}+{y_pos}')
 
-        # Frame principal con estilo mejorado
-        frame = tk.Frame(popup, bg="#FFFFFF", bd=2, relief="ridge")
-        frame.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
-
-        # Título con estilo mejorado
-        titulo_frame = tk.Frame(frame, bg="#003366", padx=5, pady=5)
-        titulo_frame.grid(row=0, column=0, columnspan=2, sticky="ew", padx=5, pady=(0, 10))
-        tk.Label(titulo_frame, text="Registrar Salida de Inventario", 
-                font=("Helvetica", 12, "bold"), fg="#FFFFFF", bg="#003366").pack(anchor="w")
+        # Frame principal que contendrá todo centrado
+        main_frame = tk.Frame(popup, bg="#e6ecf0")
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
         
-        # Información del producto - Forma más compacta
-        info_frame = tk.Frame(frame, bg="#FFFFFF")
-        info_frame.grid(row=1, column=0, columnspan=2, sticky="ew", padx=10, pady=5)
+        # Frame de contenido (este será nuestro bloque centrado)
+        content_frame = tk.Frame(main_frame, bg="#FFFFFF", bd=2, relief="ridge")
+        content_frame.pack(fill=tk.BOTH, expand=True)
         
-        # Estilos consistentes más compactos
-        estilo_etiqueta = {"font": ("Helvetica", 10, "bold"), "fg": "#003366", "bg": "#FFFFFF"}
-        estilo_dato = {"font": ("Helvetica", 10), "bg": "#FFFFFF", "fg": "#333333"}
-        estilo_entrada = {"font": ("Helvetica", 10), "bd": 1, "relief": "solid"}
+        # Frame para el título (ocupa todo el ancho)
+        title_frame = tk.Frame(content_frame, bg="#003366")
+        title_frame.pack(fill=tk.X, pady=(0, 20))
         
-        # Primera fila - Producto y Proveedor
-        tk.Label(info_frame, text="Producto:", **estilo_etiqueta).grid(row=0, column=0, sticky="w", pady=2)
-        tk.Label(info_frame, text=f"{tipo_producto} - {descripcion}", **estilo_dato).grid(row=0, column=1, sticky="w", pady=2)
+        # Título del formulario
+        tk.Label(title_frame, 
+                text="Registrar Salida de Inventario", 
+                font=("Helvetica", 14, "bold"), 
+                fg="#FFFFFF", 
+                bg="#003366",
+                padx=10,
+                pady=10).pack()
         
-        tk.Label(info_frame, text="Proveedor:", **estilo_etiqueta).grid(row=1, column=0, sticky="w", pady=2)
-        tk.Label(info_frame, text=proveedor, **estilo_dato).grid(row=1, column=1, sticky="w", pady=2)
+        # Frame para el formulario (este será nuestro contenedor centrado)
+        form_container = tk.Frame(content_frame, bg="#FFFFFF")
+        form_container.pack(expand=True, padx=40, pady=10)
         
-        tk.Label(info_frame, text="Disponible:", **estilo_etiqueta).grid(row=2, column=0, sticky="w", pady=2)
-        disponible_label = tk.Label(info_frame, text=str(cantidad_disponible), **estilo_dato)
-        disponible_label.grid(row=2, column=1, sticky="w", pady=2)
+        # Frame que contendrá los campos del formulario (alineación izquierda dentro del centro)
+        form_fields = tk.Frame(form_container, bg="#FFFFFF")
+        form_fields.pack()
+        
+        # Estilos consistentes (iguales a proveedores)
+        estilo_etiqueta = {
+            "font": ("Helvetica", 10, "bold"), 
+            "fg": "#003366", 
+            "bg": "#FFFFFF",
+            "anchor": "w",
+            "padx": 5,
+            "pady": 5,
+            "width": 12  # Ancho fijo para alinear
+        }
+        
+        estilo_dato = {
+            "font": ("Helvetica", 10), 
+            "bg": "#FFFFFF", 
+            "fg": "#333333",
+            "anchor": "w",
+            "padx": 5,
+            "pady": 5
+        }
+        
+        estilo_entrada = {
+            "font": ("Helvetica", 10), 
+            "bd": 1, 
+            "relief": "solid",
+            "highlightthickness": 1,
+            "highlightbackground": "#cccccc",
+            "highlightcolor": "#003366",
+            "width": 30
+        }
+        
+        # Configuración específica para el Combobox
+        style = ttk.Style()
+        style.configure('TCombobox', 
+                    font=('Helvetica', 10),
+                    borderwidth=1,
+                    relief="solid",
+                    padding=5,
+                    width=28)  # Ajustado para igualar el ancho de las entradas
+        
+        # Campos del formulario (alineados a la izquierda dentro del bloque centrado)
+        
+        # Información del producto
+        tk.Label(form_fields, text="Producto:", **estilo_etiqueta).grid(row=0, column=0, sticky="w")
+        tk.Label(form_fields, text=f"{tipo_producto} - {descripcion}", **estilo_dato).grid(row=0, column=1, sticky="w")
+        
+        tk.Label(form_fields, text="Proveedor:", **estilo_etiqueta).grid(row=1, column=0, sticky="w")
+        tk.Label(form_fields, text=proveedor, **estilo_dato).grid(row=1, column=1, sticky="w")
+        
+        tk.Label(form_fields, text="Disponible:", **estilo_etiqueta).grid(row=2, column=0, sticky="w")
+        disponible_label = tk.Label(form_fields, text=str(cantidad_disponible), **estilo_dato)
+        disponible_label.grid(row=2, column=1, sticky="w")
         
         # Separador visual
-        ttk.Separator(frame, orient="horizontal").grid(row=2, column=0, columnspan=2, sticky="ew", padx=10, pady=5)
+        ttk.Separator(form_fields, orient="horizontal").grid(row=3, column=0, columnspan=2, sticky="ew", pady=10)
         
-        # Formulario de entrada compacto
-        form_frame = tk.Frame(frame, bg="#FFFFFF")
-        form_frame.grid(row=3, column=0, columnspan=2, sticky="ew", padx=10, pady=5)
-        
-        # Campos de entrada compactos
-        # Cantidad
-        tk.Label(form_frame, text="Cantidad a retirar:", **estilo_etiqueta).grid(row=0, column=0, sticky="w", pady=3)
-        cantidad_entry = tk.Entry(form_frame, width=10, **estilo_entrada)
-        cantidad_entry.grid(row=0, column=1, sticky="w", pady=3)
+        # Campos de entrada
+        tk.Label(form_fields, text="Cantidad:", **estilo_etiqueta).grid(row=4, column=0, sticky="w")
+        cantidad_entry = tk.Entry(form_fields, **estilo_entrada)
+        cantidad_entry.grid(row=4, column=1, pady=5, sticky="w")
         cantidad_entry.insert(0, "1")
         
-        # Destino
-        tk.Label(form_frame, text="Destino/Uso:", **estilo_etiqueta).grid(row=1, column=0, sticky="w", pady=3)
-        destino_entry = tk.Entry(form_frame, width=30, **estilo_entrada)
-        destino_entry.grid(row=1, column=1, sticky="w", pady=3)
+        tk.Label(form_fields, text="Destino/Uso:", **estilo_etiqueta).grid(row=5, column=0, sticky="w")
+        destino_entry = tk.Entry(form_fields, **estilo_entrada)
+        destino_entry.grid(row=5, column=1, pady=5, sticky="w")
         
-        # Responsable
-        tk.Label(form_frame, text="Responsable:", **estilo_etiqueta).grid(row=2, column=0, sticky="w", pady=3)
-        
-        # Estilo para combobox
-        style = ttk.Style()
-        style.configure('TCombobox', font=('Helvetica', 10))
+        tk.Label(form_fields, text="Responsable:", **estilo_etiqueta).grid(row=6, column=0, sticky="w")
         
         # Lista de responsables predefinidos
         responsables = [
@@ -3288,24 +3328,28 @@ class SistemaERP:
             "Jefe Logística", 
         ]
         
-        responsable_combobox = ttk.Combobox(form_frame, values=responsables, state="readonly", width=28, 
-                                        font=("Helvetica", 10))
-        responsable_combobox.grid(row=2, column=1, sticky="w", pady=3)
-        responsable_combobox.set(responsables[0])  # Establecer el primer valor por defecto
+        responsable_combobox = ttk.Combobox(
+            form_fields, 
+            values=responsables, 
+            state="readonly",
+            style='TCombobox'
+        )
+        responsable_combobox.grid(row=6, column=1, pady=5, sticky="w", ipady=3)
+        responsable_combobox.set(responsables[0])  # Valor por defecto
         
-        # Notas
-        tk.Label(form_frame, text="Notas:", **estilo_etiqueta).grid(row=3, column=0, sticky="w", pady=3)
-        notas_entry = tk.Entry(form_frame, width=30, **estilo_entrada)
-        notas_entry.grid(row=3, column=1, sticky="w", pady=3)
+        tk.Label(form_fields, text="Notas:", **estilo_etiqueta).grid(row=7, column=0, sticky="w")
+        notas_entry = tk.Entry(form_fields, **estilo_entrada)
+        notas_entry.grid(row=7, column=1, pady=5, sticky="w")
         
-        # Separador visual antes de los botones
-        ttk.Separator(frame, orient="horizontal").grid(row=4, column=0, columnspan=2, sticky="ew", padx=10, pady=5)
-
-        # Frame para botones con estilo mejorado
-        botones_frame = tk.Frame(frame, bg="#FFFFFF")
-        botones_frame.grid(row=5, column=0, columnspan=2, pady=10)
-
-        # Estilo de botones mejorado pero más compactos
+        # Frame para botones (centrados abajo del formulario)
+        button_frame = tk.Frame(content_frame, bg="#FFFFFF", pady=20)
+        button_frame.pack(fill=tk.X)
+        
+        # Contenedor interno para centrar los botones
+        button_container = tk.Frame(button_frame, bg="#FFFFFF")
+        button_container.pack()
+        
+        # Estilo de botones (iguales a proveedores)
         estilo_btn_primario = {
             "bg": "#003366", 
             "fg": "#FFFFFF", 
@@ -3314,9 +3358,10 @@ class SistemaERP:
             "activeforeground": "#FFFFFF",
             "cursor": "hand2", 
             "relief": "raised", 
-            "padx": 12, 
-            "pady": 5,
-            "bd": 0
+            "padx": 20, 
+            "pady": 8,
+            "bd": 0,
+            "width": 12
         }
         
         estilo_btn_secundario = {
@@ -3327,30 +3372,34 @@ class SistemaERP:
             "activeforeground": "#FFFFFF",
             "cursor": "hand2", 
             "relief": "raised", 
-            "padx": 12, 
-            "pady": 5,
-            "bd": 0
+            "padx": 20, 
+            "pady": 8,
+            "bd": 0,
+            "width": 12
         }
 
-        # Botón guardar con estilo mejorado
-        registrar_btn = tk.Button(botones_frame, text="Registrar Salida", 
-                command=lambda: self.registrar_salida_inventario(
-                    id_producto, 
-                    tipo_producto, 
-                    descripcion, 
-                    cantidad_entry.get(), 
-                    destino_entry.get(), 
-                    responsable_combobox.get(), 
-                    notas_entry.get(), 
-                    cantidad_disponible, 
-                    popup
-                ),
-                **estilo_btn_primario)
+        # Botón registrar
+        registrar_btn = tk.Button(button_container, 
+                            text="Registrar", 
+                            command=lambda: self.registrar_salida_inventario(
+                                id_producto, 
+                                tipo_producto, 
+                                descripcion, 
+                                cantidad_entry.get(), 
+                                destino_entry.get(), 
+                                responsable_combobox.get(), 
+                                notas_entry.get(), 
+                                cantidad_disponible, 
+                                popup
+                            ),
+                            **estilo_btn_primario)
         registrar_btn.pack(side=tk.LEFT, padx=10)
 
-        # Botón cancelar con estilo mejorado
-        cancelar_btn = tk.Button(botones_frame, text="Cancelar", command=popup.destroy,
-                **estilo_btn_secundario)
+        # Botón cancelar
+        cancelar_btn = tk.Button(button_container, 
+                            text="Cancelar", 
+                            command=popup.destroy,
+                            **estilo_btn_secundario)
         cancelar_btn.pack(side=tk.LEFT, padx=10)
         
         # Focus en el campo de cantidad
