@@ -3677,83 +3677,126 @@ class SistemaERP:
         # Limpiar ventana
         for widget in self.root.winfo_children():
             widget.destroy()
-    
+        
+        # Configurar fondo general
+        self.root.configure(bg='#e6ecf0')
+        
         # Frame principal
-        main_frame = tk.Frame(self.root)
-        main_frame.pack(fill=tk.BOTH, expand=True)
-    
+        main_frame = tk.Frame(self.root, bg='#e6ecf0')
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+        
         # Barra superior
-        top_frame = tk.Frame(main_frame)
+        top_frame = tk.Frame(main_frame, bg='white', bd=2, relief='ridge')
         top_frame.pack(fill=tk.X, padx=10, pady=5)
-    
+        
         # Botón de regreso
-        back_btn = tk.Button(top_frame, text="Volver al Menú", command=self.mostrar_menu_principal)
-        back_btn.pack(side=tk.RIGHT)
-    
+        back_btn = tk.Button(top_frame, text="Volver al Menú", 
+                           command=self.mostrar_menu_principal,
+                           bg='#003366', fg='white',
+                           font=('Arial', 10, 'bold'),
+                           relief='flat', activebackground='#002244')
+        back_btn.pack(side=tk.RIGHT, padx=10, pady=5)
+        
         # Título
-        tk.Label(top_frame, text="Módulo de Compras", font=("Arial", 16)).pack(side=tk.LEFT)
-    
+        tk.Label(top_frame, text="Módulo de Compras", 
+                font=("Arial", 16, "bold"), fg='#003366', bg='white').pack(side=tk.LEFT, padx=10)
+        
         # Frame de pestañas
+        tab_style = ttk.Style()
+        tab_style.configure('TNotebook', background='#e6ecf0')
+        tab_style.configure('TNotebook.Tab', font=('Arial', 10, 'bold'), padding=[10, 5])
+        
         tab_control = ttk.Notebook(main_frame)
-    
+        
         # Pestaña Registrar Compra
-        tab_registrar = tk.Frame(tab_control)
+        tab_registrar = ttk.Frame(tab_control)
         tab_control.add(tab_registrar, text="Registrar Compra")
         self.setup_tab_registrar_compra(tab_registrar)
-    
+        
         # Pestaña Historial
-        tab_historial = tk.Frame(tab_control)
+        tab_historial = ttk.Frame(tab_control)
         tab_control.add(tab_historial, text="Historial")
         self.setup_tab_historial_compras(tab_historial)
-    
-        tab_control.pack(expand=1, fill="both")
+        
+        tab_control.pack(expand=1, fill="both", padx=10, pady=10)
+        
+        # Configurar estilo para Treeview
+        tab_style.configure("Treeview", 
+                        background="#FFFFFF",
+                        foreground="#003366",
+                        rowheight=25,
+                        fieldbackground="#FFFFFF",
+                        font=("Arial", 10))
+        tab_style.configure("Treeview.Heading", 
+                        font=("Arial", 10, "bold"),
+                        background="#e6ecf0",
+                        foreground="#003366")
+        tab_style.map("Treeview", background=[("selected", "#003366")], foreground=[("selected", "#FFFFFF")])
 
     def setup_tab_registrar_compra(self, parent):
         # Frame principal
-        frame = tk.Frame(parent)
+        frame = tk.Frame(parent, bg='#FFFFFF', bd=2, relief='ridge')
         frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
         
         # Título
-        tk.Label(frame, text="Registrar Nueva Compra", font=("Arial", 14)).pack(pady=10)
+        tk.Label(frame, text="Registrar Nueva Compra", 
+                font=("Arial", 14, 'bold'), fg='#003366', bg='#FFFFFF').pack(pady=10)
         
         # Formulario
-        form_frame = tk.Frame(frame)
-        form_frame.pack(pady=10)
+        form_frame = tk.Frame(frame, bg='#FFFFFF')
+        form_frame.pack(pady=10, padx=20)
 
         # Proveedor (primero para filtrar productos)
-        tk.Label(form_frame, text="Proveedor:").grid(row=0, column=0, sticky="w", pady=5)
-        self.proveedor_combobox = ttk.Combobox(form_frame, width=27, state="readonly")
-        self.proveedor_combobox.grid(row=0, column=1, pady=5)
+        tk.Label(form_frame, text="Proveedor:", 
+                font=('Arial', 11), fg='#003366', bg='#FFFFFF').grid(row=0, column=0, sticky="w", pady=5)
+        self.proveedor_combobox = ttk.Combobox(form_frame, width=27, state="readonly", font=('Arial', 11))
+        self.proveedor_combobox.grid(row=0, column=1, pady=5, padx=5)
         self.proveedor_combobox.bind("<<ComboboxSelected>>", self.actualizar_tipos_producto)
 
         # Tipo de producto (se actualiza según proveedor)
-        tk.Label(form_frame, text="Tipo de Producto:").grid(row=1, column=0, sticky="w", pady=5)
-        self.tipo_producto_combobox = ttk.Combobox(form_frame, width=27, state="disabled")
-        self.tipo_producto_combobox.grid(row=1, column=1, pady=5)
+        tk.Label(form_frame, text="Tipo de Producto:", 
+                font=('Arial', 11), fg='#003366', bg='#FFFFFF').grid(row=1, column=0, sticky="w", pady=5)
+        self.tipo_producto_combobox = ttk.Combobox(form_frame, width=27, state="disabled", font=('Arial', 11))
+        self.tipo_producto_combobox.grid(row=1, column=1, pady=5, padx=5)
 
         # Descripción
-        tk.Label(form_frame, text="Descripción:").grid(row=2, column=0, sticky="w", pady=5)
-        self.descripcion_compra_entry = tk.Entry(form_frame, width=30)
-        self.descripcion_compra_entry.grid(row=2, column=1, pady=5)
+        tk.Label(form_frame, text="Descripción:", 
+                font=('Arial', 11), fg='#003366', bg='#FFFFFF').grid(row=2, column=0, sticky="w", pady=5)
+        self.descripcion_compra_entry = tk.Entry(form_frame, width=30, font=('Arial', 11), 
+                                               bd=1, relief='solid')
+        self.descripcion_compra_entry.grid(row=2, column=1, pady=5, padx=5)
         
         # Cantidad
-        tk.Label(form_frame, text="Cantidad:").grid(row=3, column=0, sticky="w", pady=5)
-        self.cantidad_compra_entry = tk.Entry(form_frame, width=30)
-        self.cantidad_compra_entry.grid(row=3, column=1, pady=5)
+        tk.Label(form_frame, text="Cantidad:", 
+                font=('Arial', 11), fg='#003366', bg='#FFFFFF').grid(row=3, column=0, sticky="w", pady=5)
+        self.cantidad_compra_entry = tk.Entry(form_frame, width=30, font=('Arial', 11), 
+                                            bd=1, relief='solid')
+        self.cantidad_compra_entry.grid(row=3, column=1, pady=5, padx=5)
         
         # Precio unitario
-        tk.Label(form_frame, text="Precio Unitario:").grid(row=4, column=0, sticky="w", pady=5)
-        self.precio_unitario_entry = tk.Entry(form_frame, width=30)
-        self.precio_unitario_entry.grid(row=4, column=1, pady=5)
+        tk.Label(form_frame, text="Precio Unitario:", 
+                font=('Arial', 11), fg='#003366', bg='#FFFFFF').grid(row=4, column=0, sticky="w", pady=5)
+        self.precio_unitario_entry = tk.Entry(form_frame, width=30, font=('Arial', 11), 
+                                            bd=1, relief='solid')
+        self.precio_unitario_entry.grid(row=4, column=1, pady=5, padx=5)
         
         # Total
-        tk.Label(form_frame, text="Total:").grid(row=5, column=0, sticky="w", pady=5)
-        self.total_compra_label = tk.Label(form_frame, text="$0.00")
-        self.total_compra_label.grid(row=5, column=1, pady=5, sticky="w")
+        tk.Label(form_frame, text="Total:", 
+                font=('Arial', 11, 'bold'), fg='#003366', bg='#FFFFFF').grid(row=5, column=0, sticky="w", pady=5)
+        self.total_compra_label = tk.Label(form_frame, text="$0.00", 
+                                          font=('Arial', 11, 'bold'), fg='#003366', bg='#FFFFFF')
+        self.total_compra_label.grid(row=5, column=1, pady=5, sticky="w", padx=5)
         
         # Botones
-        tk.Button(form_frame, text="Calcular Total", command=self.calcular_total_compra).grid(row=6, column=1, pady=5, sticky="e")
-        tk.Button(frame, text="Registrar Compra", command=self.registrar_compra).pack(pady=20)
+        tk.Button(form_frame, text="Calcular Total", 
+                command=self.calcular_total_compra,
+                bg='#003366', fg='#FFFFFF', font=('Arial', 10, 'bold'),
+                relief='flat', activebackground='#002244').grid(row=6, column=1, pady=10, sticky="e")
+        
+        tk.Button(frame, text="Registrar Compra", 
+                command=self.registrar_compra,
+                bg='#003366', fg='#FFFFFF', font=('Arial', 11, 'bold'),
+                relief='flat', activebackground='#002244').pack(pady=20)
         
         # Cargar proveedores
         self.cargar_proveedores_combobox()
@@ -3907,26 +3950,33 @@ class SistemaERP:
 
     def setup_tab_historial_compras(self, parent):
         # Frame principal
-        frame = tk.Frame(parent)
+        frame = tk.Frame(parent, bg='#FFFFFF', bd=2, relief='ridge')
         frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
     
         # Controles superiores
-        controls_frame = tk.Frame(frame)
-        controls_frame.pack(fill=tk.X, pady=10)
+        controls_frame = tk.Frame(frame, bg='#FFFFFF')
+        controls_frame.pack(fill=tk.X, pady=10, padx=10)
     
         # Botón para refrescar
-        tk.Button(controls_frame, text="Refrescar", command=lambda: self.cargar_historial_compras(self.tree_compras)).pack(side=tk.LEFT, padx=5)
+        tk.Button(controls_frame, text="Refrescar", 
+                command=lambda: self.cargar_historial_compras(self.tree_compras),
+                bg='#003366', fg='#FFFFFF', font=('Arial', 10, 'bold'),
+                relief='flat', activebackground='#002244').pack(side=tk.LEFT, padx=5)
     
         # Treeview para mostrar compras
+        style = ttk.Style()
+        style.configure("Treeview.Heading", font=('Arial', 10, 'bold'), foreground='#003366')
+        style.configure("Treeview", font=('Arial', 10), rowheight=25)
+        
         columns = ("ID", "Fecha", "Proveedor", "Tipo", "Descripción", "Cantidad", "Precio Unitario", "Total")
-        self.tree_compras = ttk.Treeview(frame, columns=columns, show="headings")
+        self.tree_compras = ttk.Treeview(frame, columns=columns, show="headings", style="Treeview")
     
         # Configurar columnas
         for col in columns:
             self.tree_compras.heading(col, text=col)
             self.tree_compras.column(col, width=100)
     
-        self.tree_compras.pack(fill=tk.BOTH, expand=True, pady=10)
+        self.tree_compras.pack(fill=tk.BOTH, expand=True, pady=10, padx=10)
     
         # Scrollbar
         scrollbar = ttk.Scrollbar(frame, orient="vertical", command=self.tree_compras.yview)
