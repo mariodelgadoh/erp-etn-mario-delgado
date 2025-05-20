@@ -1529,67 +1529,62 @@ class SistemaERP:
         tab_control.pack(expand=1, fill="both", padx=10, pady=10)
     
     def setup_tab_resumen_finanzas(self, parent):
-        # Frame principal
-        frame = tk.Frame(parent, bg='white', bd=2, relief='ridge')
-        frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
-        
-        # Frame superior para información de saldo
-        info_frame = tk.Frame(frame, bg='white')
-        info_frame.pack(fill=tk.X, pady=20, padx=10)
-        
-        # Obtener saldo actual
-        conn = sqlite3.connect('erp_autobuses.db')
-        cursor = conn.cursor()
-        
-        try:
-            cursor.execute("SELECT saldo_actual FROM finanzas ORDER BY id DESC LIMIT 1")
-            saldo = cursor.fetchone()[0]
+            # Frame principal
+            frame = tk.Frame(parent, bg='white', bd=2, relief='ridge')
+            frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
             
-            # Mostrar saldo
-            tk.Label(info_frame, text="Saldo Actual:", 
-                    font=("Arial", 14), bg='white', fg='#003366').pack(side=tk.LEFT, padx=10)
+            # Frame superior para información de saldo
+            info_frame = tk.Frame(frame, bg='white')
+            info_frame.pack(fill=tk.X, pady=20, padx=10)
             
-            self.saldo_label = tk.Label(info_frame, text=f"${saldo:,.2f}", 
-                                      font=("Arial", 16, "bold"), bg='white', fg='#003366')
-            self.saldo_label.pack(side=tk.LEFT, padx=10)
+            # Obtener saldo actual
+            conn = sqlite3.connect('erp_autobuses.db')
+            cursor = conn.cursor()
             
-            # Botón para refrescar
-            tk.Button(info_frame, text="Refrescar", command=self.actualizar_saldo,
-                     bg='#003366', fg='white', font=('Arial', 10, 'bold'),
-                     relief='flat', activebackground='#002244').pack(side=tk.RIGHT, padx=10)
+            try:
+                cursor.execute("SELECT saldo_actual FROM finanzas ORDER BY id DESC LIMIT 1")
+                saldo = cursor.fetchone()[0]
+                
+                # Mostrar saldo
+                tk.Label(info_frame, text="Saldo Actual:", 
+                        font=("Arial", 14), bg='white', fg='#003366').pack(side=tk.LEFT, padx=10)
+                
+                self.saldo_label = tk.Label(info_frame, text=f"${saldo:,.2f}", 
+                                        font=("Arial", 16, "bold"), bg='white', fg='#003366')
+                self.saldo_label.pack(side=tk.LEFT, padx=10)
+                
+            except Exception as e:
+                messagebox.showerror("Error", f"Error al cargar saldo: {str(e)}")
+            finally:
+                conn.close()
             
-        except Exception as e:
-            messagebox.showerror("Error", f"Error al cargar saldo: {str(e)}")
-        finally:
-            conn.close()
-        
-        # Frame para gráfico
-        grafico_frame = tk.Frame(frame, bg='white')
-        grafico_frame.pack(fill=tk.BOTH, expand=True, pady=10, padx=10)
-        
-        # Crear figura para el gráfico
-        figure = plt.Figure(figsize=(6, 4), dpi=100, facecolor='white')
-        self.ax_finanzas = figure.add_subplot(111)
-        self.ax_finanzas.set_facecolor('white')
-        
-        # Configurar colores del gráfico
-        self.ax_finanzas.spines['bottom'].set_color('#003366')
-        self.ax_finanzas.spines['top'].set_color('#003366') 
-        self.ax_finanzas.spines['right'].set_color('#003366')
-        self.ax_finanzas.spines['left'].set_color('#003366')
-        self.ax_finanzas.tick_params(axis='x', colors='#003366')
-        self.ax_finanzas.tick_params(axis='y', colors='#003366')
-        self.ax_finanzas.yaxis.label.set_color('#003366')
-        self.ax_finanzas.xaxis.label.set_color('#003366')
-        self.ax_finanzas.title.set_color('#003366')
-        
-        # Canvas para el gráfico
-        self.canvas_finanzas = FigureCanvasTkAgg(figure, grafico_frame)
-        self.canvas_finanzas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
-        
-        # Cargar datos para el gráfico
-        self.actualizar_grafico_finanzas()
-    
+            # Frame para gráfico
+            grafico_frame = tk.Frame(frame, bg='white')
+            grafico_frame.pack(fill=tk.BOTH, expand=True, pady=10, padx=10)
+            
+            # Crear figura para el gráfico
+            figure = plt.Figure(figsize=(6, 4), dpi=100, facecolor='white')
+            self.ax_finanzas = figure.add_subplot(111)
+            self.ax_finanzas.set_facecolor('white')
+            
+            # Configurar colores del gráfico
+            self.ax_finanzas.spines['bottom'].set_color('#003366')
+            self.ax_finanzas.spines['top'].set_color('#003366') 
+            self.ax_finanzas.spines['right'].set_color('#003366')
+            self.ax_finanzas.spines['left'].set_color('#003366')
+            self.ax_finanzas.tick_params(axis='x', colors='#003366')
+            self.ax_finanzas.tick_params(axis='y', colors='#003366')
+            self.ax_finanzas.yaxis.label.set_color('#003366')
+            self.ax_finanzas.xaxis.label.set_color('#003366')
+            self.ax_finanzas.title.set_color('#003366')
+            
+            # Canvas para el gráfico
+            self.canvas_finanzas = FigureCanvasTkAgg(figure, grafico_frame)
+            self.canvas_finanzas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+            
+            # Cargar datos para el gráfico
+            self.actualizar_grafico_finanzas()
+
     def setup_tab_transacciones(self, parent):
         # Frame principal
         frame = tk.Frame(parent, bg='white', bd=2, relief='ridge')
