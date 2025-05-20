@@ -4508,9 +4508,28 @@ class SistemaERP:
         content_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
         # Frame para el formulario de venta
-        form_frame = tk.Frame(content_frame, bg='white')
-        form_frame.pack(fill=tk.X, pady=10, padx=20)
-        
+        frame = tk.Frame(content_frame, bg='white')
+        frame.pack(fill=tk.X, pady=10, padx=20)
+
+        # Título
+
+        tk.Label(frame, text="Venta de Boletos", 
+            font=("Arial", 14, 'bold'), fg='#003366', bg='#FFFFFF').pack(pady=(5, 5))
+
+        # Logo debajo del título
+        try:
+            logo_img = Image.open("logo.png")  # Asegúrate que la ruta es correcta
+            logo_img = logo_img.resize((150, 150), Image.LANCZOS)
+            self.logo_tk = ImageTk.PhotoImage(logo_img)  # Mantener en self para evitar garbage collection
+            logo_label = tk.Label(frame, image=self.logo_tk, bg='#FFFFFF')
+            logo_label.pack(pady=(0, 10))
+        except Exception as e:
+            print("Error cargando logo:", e)
+
+        # Frame interno para los campos del formulario (antes form_frame)
+        form_frame = tk.Frame(frame, bg='white')
+        form_frame.pack(fill=tk.X, pady=10)
+
         # Campos del formulario
         tk.Label(form_frame, text="Nombre Pasajero:", 
                 bg='white', fg='#003366', font=('Arial', 11)).grid(row=0, column=0, sticky="w", pady=5, padx=5)
