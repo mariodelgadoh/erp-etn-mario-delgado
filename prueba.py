@@ -5029,7 +5029,7 @@ class SistemaERP:
         
         detail_window = tk.Toplevel(self.root)
         detail_window.title(f"Boletos de {nombre} {apellidos}")
-        detail_window.geometry("1000x700")
+        detail_window.geometry("1200x600")
         detail_window.configure(bg='#e6ecf0')
         
         # Configurar estilo para la ventana de detalle
@@ -5048,18 +5048,23 @@ class SistemaERP:
         main_frame = ttk.Frame(detail_window, style='Detalle.TFrame')
         main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
         
-        # Información resumen del cliente
+        # Información resumen del cliente - Usando pack en lugar de grid
         summary_frame = ttk.Frame(main_frame, style='Detalle.TFrame', borderwidth=2, relief=tk.GROOVE)
         summary_frame.pack(fill=tk.X, pady=10, padx=10)
         
-        ttk.Label(summary_frame, text=f"Cliente: {nombre} {apellidos}", 
-                font=("Arial", 12, "bold"), style='Detalle.TLabel').pack(anchor=tk.W, padx=10, pady=5)
-        ttk.Label(summary_frame, text=f"Total de boletos comprados: {item_data[3]}", 
-                style='Detalle.TLabel').pack(anchor=tk.W, padx=10)
-        ttk.Label(summary_frame, text=f"Última compra: {item_data[4]}", 
-                style='Detalle.TLabel').pack(anchor=tk.W, padx=10)
-        ttk.Label(summary_frame, text=f"Total gastado: {item_data[5]}", 
-                style='Detalle.TLabel').pack(anchor=tk.W, padx=10, pady=5)
+        # Contenedor para los labels usando pack
+        info_container = ttk.Frame(summary_frame, style='Detalle.TFrame')
+        info_container.pack(fill=tk.X, padx=10, pady=10)
+        
+        # Estilos para labels
+        title_style = {'style': 'Detalle.TLabel', 'font': ('Arial', 12, 'bold')}
+        label_style = {'style': 'Detalle.TLabel'}
+        
+        # Información del cliente usando pack
+        ttk.Label(info_container, text=f"Cliente: {nombre} {apellidos}", **title_style).pack(anchor=tk.W, pady=(0, 5))
+        ttk.Label(info_container, text=f"Total de boletos comprados: {item_data[3]}", **label_style).pack(anchor=tk.W)
+        ttk.Label(info_container, text=f"Última compra: {item_data[4]}", **label_style).pack(anchor=tk.W)
+        ttk.Label(info_container, text=f"Total gastado: {item_data[5]}", **label_style).pack(anchor=tk.W, pady=(0, 5))
         
         # Treeview para mostrar los boletos del cliente
         columns = ("ID", "Ruta", "Fecha Viaje", "Horario", "Asiento", "Precio", "Fecha Compra")
