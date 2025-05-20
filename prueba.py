@@ -4471,82 +4471,134 @@ class SistemaERP:
         # Limpiar ventana
         for widget in self.root.winfo_children():
             widget.destroy()
-    
+        
+        # Configurar fondo general
+        self.root.configure(bg='#e6ecf0')
+        
         # Frame principal
-        main_frame = tk.Frame(self.root)
-        main_frame.pack(fill=tk.BOTH, expand=True)
-    
+        main_frame = tk.Frame(self.root, bg='#e6ecf0')
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+        
         # Barra superior
-        top_frame = tk.Frame(main_frame)
+        top_frame = tk.Frame(main_frame, bg='white', bd=2, relief='ridge')
         top_frame.pack(fill=tk.X, padx=10, pady=5)
-    
+        
         # Botón de regreso
-        back_btn = tk.Button(top_frame, text="Volver al Menú", command=self.mostrar_menu_principal)
-        back_btn.pack(side=tk.RIGHT)
+        back_btn = tk.Button(top_frame, text="Volver al Menú", 
+                        command=self.mostrar_menu_principal,
+                        bg='#003366', fg='white',
+                        font=('Arial', 10, 'bold'),
+                        relief='flat', activebackground='#002244')
+        back_btn.pack(side=tk.RIGHT, padx=10, pady=5)
         
         # Botón de clientes
-        clientes_btn = tk.Button(top_frame, text="Clientes", command=self.mostrar_clientes)
-        clientes_btn.pack(side=tk.RIGHT, padx=5)
-    
+        clientes_btn = tk.Button(top_frame, text="Clientes", 
+                            command=self.mostrar_clientes,
+                            bg='#003366', fg='white',
+                            font=('Arial', 10, 'bold'),
+                            relief='flat', activebackground='#002244')
+        clientes_btn.pack(side=tk.RIGHT, padx=5, pady=5)
+        
         # Título
-        tk.Label(top_frame, text="Módulo de Ventas", font=("Arial", 16)).pack(side=tk.LEFT)
-    
+        tk.Label(top_frame, text="Módulo de Ventas", 
+                font=("Arial", 16, "bold"), fg='#003366', bg='white').pack(side=tk.LEFT, padx=10)
+        
         # Frame de contenido
-        content_frame = tk.Frame(main_frame)
-        content_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
-    
-        # Formulario para vender boletos
-        form_frame = tk.Frame(content_frame)
-        form_frame.pack(fill=tk.X, pady=10)
-    
+        content_frame = tk.Frame(main_frame, bg='white', bd=2, relief='ridge')
+        content_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        
+        # Frame para el formulario de venta
+        form_frame = tk.Frame(content_frame, bg='white')
+        form_frame.pack(fill=tk.X, pady=10, padx=20)
+        
         # Campos del formulario
-        tk.Label(form_frame, text="Nombre Pasajero:").grid(row=0, column=0, sticky="w", pady=5)
-        self.nombre_pasajero_entry = tk.Entry(form_frame, width=30)
-        self.nombre_pasajero_entry.grid(row=0, column=1, pady=5)
-    
-        tk.Label(form_frame, text="Apellidos Pasajero:").grid(row=1, column=0, sticky="w", pady=5)
-        self.apellidos_pasajero_entry = tk.Entry(form_frame, width=30)
-        self.apellidos_pasajero_entry.grid(row=1, column=1, pady=5)
-    
-        tk.Label(form_frame, text="Ruta:").grid(row=2, column=0, sticky="w", pady=5)
-        self.ruta_combobox = ttk.Combobox(form_frame, width=27)
-        self.ruta_combobox.grid(row=2, column=1, pady=5)
+        tk.Label(form_frame, text="Nombre Pasajero:", 
+                bg='white', fg='#003366', font=('Arial', 11)).grid(row=0, column=0, sticky="w", pady=5, padx=5)
+        self.nombre_pasajero_entry = tk.Entry(form_frame, width=30, 
+                                            font=('Arial', 11), bd=1, relief='solid')
+        self.nombre_pasajero_entry.grid(row=0, column=1, pady=5, padx=5)
+        
+        tk.Label(form_frame, text="Apellidos Pasajero:", 
+                bg='white', fg='#003366', font=('Arial', 11)).grid(row=1, column=0, sticky="w", pady=5, padx=5)
+        self.apellidos_pasajero_entry = tk.Entry(form_frame, width=30, 
+                                            font=('Arial', 11), bd=1, relief='solid')
+        self.apellidos_pasajero_entry.grid(row=1, column=1, pady=5, padx=5)
+        
+        tk.Label(form_frame, text="Ruta:", 
+                bg='white', fg='#003366', font=('Arial', 11)).grid(row=2, column=0, sticky="w", pady=5, padx=5)
+        self.ruta_combobox = ttk.Combobox(form_frame, width=27, font=('Arial', 11))
+        self.ruta_combobox.grid(row=2, column=1, pady=5, padx=5, sticky="w")
         self.ruta_combobox.bind("<<ComboboxSelected>>", self.actualizar_horarios_disponibles)
-    
-        tk.Label(form_frame, text="Horario:").grid(row=3, column=0, sticky="w", pady=5)
-        self.horario_combobox = ttk.Combobox(form_frame, width=27)
-        self.horario_combobox.grid(row=3, column=1, pady=5)
+        
+        tk.Label(form_frame, text="Horario:", 
+                bg='white', fg='#003366', font=('Arial', 11)).grid(row=3, column=0, sticky="w", pady=5, padx=5)
+        self.horario_combobox = ttk.Combobox(form_frame, width=27, font=('Arial', 11))
+        self.horario_combobox.grid(row=3, column=1, pady=5, padx=5, sticky="w")
         self.horario_combobox.bind("<<ComboboxSelected>>", self.actualizar_asientos_disponibles)
-    
-        tk.Label(form_frame, text="Fecha de Viaje:").grid(row=4, column=0, sticky="w", pady=5)
-        self.fecha_viaje_entry = DateEntry(form_frame, width=12, background='darkblue', foreground='white', borderwidth=2)
-        self.fecha_viaje_entry.grid(row=4, column=1, pady=5, sticky="w")
-    
-        tk.Label(form_frame, text="Asientos:").grid(row=5, column=0, sticky="w", pady=5)
-        self.asientos_listbox = tk.Listbox(form_frame, selectmode=tk.MULTIPLE, width=25, height=5, exportselection=False)
-        self.asientos_listbox.grid(row=5, column=1, pady=5)
+        
+        tk.Label(form_frame, text="Fecha de Viaje:", 
+                bg='white', fg='#003366', font=('Arial', 11)).grid(row=4, column=0, sticky="w", pady=5, padx=5)
+        self.fecha_viaje_entry = DateEntry(form_frame, width=12, 
+                                        background='darkblue', foreground='white', 
+                                        borderwidth=2, font=('Arial', 11))
+        self.fecha_viaje_entry.grid(row=4, column=1, pady=5, padx=5, sticky="w")
+        
+        tk.Label(form_frame, text="Asientos:", 
+                bg='white', fg='#003366', font=('Arial', 11)).grid(row=5, column=0, sticky="w", pady=5, padx=5)
+        self.asientos_listbox = tk.Listbox(form_frame, selectmode=tk.MULTIPLE, 
+                                        width=25, height=5, exportselection=False,
+                                        font=('Arial', 11), bd=1, relief='solid')
+        self.asientos_listbox.grid(row=5, column=1, pady=5, padx=5, sticky="w")
         self.asientos_listbox.bind('<<ListboxSelect>>', self.actualizar_cantidad_desde_asientos)
         
         # Frame para cantidad y precio
-        cantidad_frame = tk.Frame(form_frame)
-        cantidad_frame.grid(row=6, column=0, columnspan=2, pady=5)
+        cantidad_frame = tk.Frame(form_frame, bg='white')
+        cantidad_frame.grid(row=6, column=0, columnspan=2, pady=10)
         
-        tk.Label(cantidad_frame, text="Cantidad:").pack(side=tk.LEFT)
-        self.cantidad_spinbox = tk.Spinbox(cantidad_frame, from_=1, to=10, width=5, command=self.actualizar_asientos_desde_cantidad)
+        tk.Label(cantidad_frame, text="Cantidad:", 
+                bg='white', fg='#003366', font=('Arial', 11)).pack(side=tk.LEFT)
+        self.cantidad_spinbox = tk.Spinbox(cantidad_frame, from_=1, to=10, width=5, 
+                                        font=('Arial', 11), bd=1, relief='solid',
+                                        command=self.actualizar_asientos_desde_cantidad)
         self.cantidad_spinbox.pack(side=tk.LEFT, padx=5)
         self.cantidad_spinbox.bind("<KeyRelease>", self.actualizar_asientos_desde_cantidad)
         
-        tk.Label(cantidad_frame, text="Precio Unitario:").pack(side=tk.LEFT, padx=(10,0))
-        self.precio_unitario_label = tk.Label(cantidad_frame, text="$0.00")
+        tk.Label(cantidad_frame, text="Precio Unitario:", 
+                bg='white', fg='#003366', font=('Arial', 11)).pack(side=tk.LEFT, padx=(10,0))
+        self.precio_unitario_label = tk.Label(cantidad_frame, text="$0.00", 
+                                            bg='white', fg='#003366', font=('Arial', 11))
         self.precio_unitario_label.pack(side=tk.LEFT)
         
-        tk.Label(cantidad_frame, text="Total:").pack(side=tk.LEFT, padx=(10,0))
-        self.precio_total_label = tk.Label(cantidad_frame, text="$0.00", font=("Arial", 10, "bold"))
+        tk.Label(cantidad_frame, text="Total:", 
+                bg='white', fg='#003366', font=('Arial', 11, 'bold')).pack(side=tk.LEFT, padx=(10,0))
+        self.precio_total_label = tk.Label(cantidad_frame, text="$0.00", 
+                                        bg='white', fg='#003366', font=('Arial', 11, 'bold'))
         self.precio_total_label.pack(side=tk.LEFT)
-    
+        
         # Botón para vender boleto
-        tk.Button(content_frame, text="Vender Boletos", command=self.vender_boletos).pack(pady=20)
-    
+        sell_btn = tk.Button(content_frame, text="Vender Boletos", 
+                        command=self.vender_boletos,
+                        bg='#003366', fg='white',
+                        font=('Arial', 12, 'bold'),
+                        relief='flat', activebackground='#002244')
+        sell_btn.pack(pady=20)
+        
+        # Configurar estilo para Treeview (si hubiera uno en este módulo)
+        style = ttk.Style()
+        style.configure("Treeview", 
+                    background="#FFFFFF",
+                    foreground="#003366",
+                    rowheight=25,
+                    fieldbackground="#FFFFFF",
+                    font=("Arial", 10))
+        style.configure("Treeview.Heading", 
+                    font=("Arial", 10, "bold"),
+                    background="#e6ecf0",
+                    foreground="#003366")
+        style.map("Treeview", 
+                background=[("selected", "#003366")], 
+                foreground=[("selected", "#FFFFFF")])
+        
         # Cargar rutas en el combobox
         self.cargar_rutas_combobox()
 
@@ -4574,17 +4626,15 @@ class SistemaERP:
             conn.close()
 
     def actualizar_horarios_disponibles(self, event=None):
-        # Obtener ID de la ruta seleccionada
         seleccion = self.ruta_combobox.get()
         if not seleccion:
             return
-    
+
         ruta_id = int(seleccion.split("-")[0].strip())
-    
-        # Cargar horarios disponibles para esta ruta
+
         conn = sqlite3.connect('erp_autobuses.db')
         cursor = conn.cursor()
-    
+
         try:
             cursor.execute("""
                 SELECT h.id, h.hora_salida, h.hora_llegada, h.dias_semana, a.modelo
@@ -4611,11 +4661,10 @@ class SistemaERP:
             conn.close()
 
     def actualizar_asientos_disponibles(self, event=None):
-        """Actualiza la lista de asientos disponibles basado en horario y fecha seleccionados"""
         seleccion = self.horario_combobox.get()
         if not seleccion:
             return
-    
+
         try:
             horario_id = int(seleccion.split("-")[0].strip())
             fecha_viaje = self.fecha_viaje_entry.get_date().strftime("%Y-%m-%d")
@@ -4623,7 +4672,6 @@ class SistemaERP:
             conn = sqlite3.connect('erp_autobuses.db')
             cursor = conn.cursor()
         
-            # 1. Obtener asientos ya ocupados para este horario y fecha
             cursor.execute("""
                 SELECT numero_asiento 
                 FROM boletos 
@@ -4632,7 +4680,6 @@ class SistemaERP:
             """, (horario_id, fecha_viaje))
             asientos_ocupados = [row[0] for row in cursor.fetchall()]
         
-            # 2. Obtener capacidad del autobús asignado a este horario
             cursor.execute("""
                 SELECT a.capacidad 
                 FROM horarios h
@@ -4641,7 +4688,6 @@ class SistemaERP:
             """, (horario_id,))
             capacidad = cursor.fetchone()[0]
         
-            # 3. Obtener precio del boleto para esta ruta
             cursor.execute("""
                 SELECT r.precio_boleto 
                 FROM horarios h
@@ -4650,13 +4696,11 @@ class SistemaERP:
             """, (horario_id,))
             precio = cursor.fetchone()[0]
         
-            # 4. Generar lista de asientos disponibles (1 hasta capacidad)
             asientos_disponibles = [
                 str(i) for i in range(1, capacidad + 1) 
                 if i not in asientos_ocupados
             ]
         
-            # Actualizar interfaz
             self.asientos_listbox.delete(0, tk.END)
             for asiento in asientos_disponibles:
                 self.asientos_listbox.insert(tk.END, asiento)
@@ -4664,7 +4708,6 @@ class SistemaERP:
             self.precio_unitario_label.config(text=f"${precio:.2f}")
             self.actualizar_precio_total()
         
-            # Mostrar advertencia si no hay asientos
             if not asientos_disponibles:
                 messagebox.showwarning("Disponibilidad", 
                     "No hay asientos disponibles para este horario y fecha")
@@ -4675,11 +4718,9 @@ class SistemaERP:
             conn.close()
 
     def actualizar_cantidad_desde_asientos(self, event=None):
-        """Actualiza la cantidad basada en los asientos seleccionados"""
         seleccionados = self.asientos_listbox.curselection()
         cantidad = len(seleccionados)
         
-        # Actualizar el spinbox solo si hay selección
         if seleccionados:
             self.cantidad_spinbox.delete(0, tk.END)
             self.cantidad_spinbox.insert(0, str(cantidad))
@@ -4687,29 +4728,23 @@ class SistemaERP:
         self.actualizar_precio_total()
 
     def actualizar_asientos_desde_cantidad(self, event=None):
-        """Actualiza la selección de asientos basada en la cantidad"""
         try:
             cantidad_deseada = int(self.cantidad_spinbox.get())
             seleccionados = list(self.asientos_listbox.curselection())
             total_asientos = self.asientos_listbox.size()
             
-            # Si la cantidad es mayor que los asientos seleccionados
             if cantidad_deseada > len(seleccionados):
-                # Limpiar selección si es necesario
                 if cantidad_deseada > total_asientos:
                     cantidad_deseada = total_asientos
                     self.cantidad_spinbox.delete(0, tk.END)
                     self.cantidad_spinbox.insert(0, str(cantidad_deseada))
                 
-                # Seleccionar los primeros N asientos disponibles
                 nuevos_seleccionados = list(range(min(cantidad_deseada, total_asientos)))
                 self.asientos_listbox.selection_clear(0, tk.END)
                 for i in nuevos_seleccionados:
                     self.asientos_listbox.selection_set(i)
             
-            # Si la cantidad es menor que los asientos seleccionados
             elif cantidad_deseada < len(seleccionados):
-                # Mantener solo los primeros N seleccionados
                 nuevos_seleccionados = seleccionados[:cantidad_deseada]
                 self.asientos_listbox.selection_clear(0, tk.END)
                 for i in nuevos_seleccionados:
@@ -4720,13 +4755,11 @@ class SistemaERP:
             pass
 
     def actualizar_precio_total(self, event=None):
-        """Calcula el precio total basado en la cantidad de boletos seleccionados"""
         try:
             precio_texto = self.precio_unitario_label.cget("text")
             precio_unitario = float(precio_texto.replace("$", ""))
             cantidad = len(self.asientos_listbox.curselection())
             
-            # Asegurar que el spinbox refleje la cantidad correcta
             if cantidad != int(self.cantidad_spinbox.get()):
                 self.cantidad_spinbox.delete(0, tk.END)
                 self.cantidad_spinbox.insert(0, str(cantidad))
@@ -4737,7 +4770,6 @@ class SistemaERP:
             self.precio_total_label.config(text="$0.00")
 
     def vender_boletos(self):
-        # Validar datos
         nombre = self.nombre_pasajero_entry.get()
         apellidos = self.apellidos_pasajero_entry.get()
         ruta = self.ruta_combobox.get()
@@ -4753,12 +4785,10 @@ class SistemaERP:
             horario_id = int(horario.split("-")[0].strip())
             cantidad = len(asientos_seleccionados)
             
-            # Obtener precio del boleto
             precio_texto = self.precio_unitario_label.cget("text")
             precio_unitario = float(precio_texto.replace("$", ""))
             precio_total = precio_unitario * cantidad
 
-            # Verificar que los asientos aún estén disponibles
             conn = sqlite3.connect('erp_autobuses.db')
             cursor = conn.cursor()
             
@@ -4768,7 +4798,6 @@ class SistemaERP:
                     numero_asiento = int(self.asientos_listbox.get(index))
                     asientos_numeros.append(numero_asiento)
                     
-                    # Verificar si el asiento ya está ocupado
                     cursor.execute("""
                         SELECT 1 FROM boletos 
                         WHERE horario_id = ? AND fecha_viaje = ? AND numero_asiento = ?
@@ -4781,7 +4810,6 @@ class SistemaERP:
 
                 fecha_compra = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-                # Registrar cada boleto
                 for numero_asiento in asientos_numeros:
                     cursor.execute("""
                         INSERT INTO boletos (nombre_pasajero, apellidos_pasajero, horario_id, 
@@ -4789,7 +4817,6 @@ class SistemaERP:
                         VALUES (?, ?, ?, ?, ?, ?, ?)
                     """, (nombre, apellidos, horario_id, numero_asiento, fecha_viaje, fecha_compra, precio_unitario))
 
-                # Registrar ingreso en finanzas (solo una vez por la transacción completa)
                 cursor.execute("SELECT saldo_actual FROM finanzas ORDER BY id DESC LIMIT 1")
                 saldo_actual = cursor.fetchone()[0]
                 concepto = f"Venta de {cantidad} boletos a {nombre} {apellidos}"
@@ -4802,7 +4829,6 @@ class SistemaERP:
                 conn.commit()
                 messagebox.showinfo("Éxito", f"{cantidad} boletos vendidos exitosamente")
 
-                # Limpiar formulario
                 self.nombre_pasajero_entry.delete(0, tk.END)
                 self.apellidos_pasajero_entry.delete(0, tk.END)
                 self.ruta_combobox.set("")
@@ -4814,14 +4840,10 @@ class SistemaERP:
                 self.precio_unitario_label.config(text="$0.00")
                 self.precio_total_label.config(text="$0.00")
 
-                # Actualizar lista de asientos disponibles inmediatamente
                 if ruta:
-                    # Primero cargar horarios para la ruta seleccionada
                     self.actualizar_horarios_disponibles()
                 
-                    # Si había un horario seleccionado, cargar asientos para ese horario
                     if horario:
-                        # Esperar un momento para que se actualice el combobox de horarios
                         self.root.after(100, lambda: self.horario_combobox.set(horario))
                         self.root.after(150, lambda: self.actualizar_asientos_disponibles())
 
@@ -4835,29 +4857,44 @@ class SistemaERP:
             messagebox.showerror("Error", "Debe seleccionar al menos un asiento")
             return
 
-    # ============ MÉTODOS PARA MANEJO DE CLIENTES ==============
     def mostrar_clientes(self):
-        """Muestra una ventana con la lista de clientes y sus boletos comprados"""
         clientes_window = tk.Toplevel(self.root)
         clientes_window.title("Clientes")
-        clientes_window.geometry("800x600")
+        clientes_window.geometry("900x700")
+        clientes_window.configure(bg='#e6ecf0')
+        
+        # Configurar estilo para la ventana de clientes
+        style = ttk.Style(clientes_window)
+        style.configure('Clientes.TFrame', background='#e6ecf0')
+        style.configure('Clientes.TLabel', background='#e6ecf0', font=('Arial', 11))
+        style.configure('Clientes.TButton', font=('Arial', 10, 'bold'), relief='flat',
+                    background='#003366', foreground='white')
+        style.map('Clientes.TButton',
+                background=[('active', '#002244'), ('!disabled', '#003366')],
+                foreground=[('!disabled', 'white')])
+        style.configure('Clientes.Treeview', font=('Arial', 10), rowheight=25)
+        style.configure('Clientes.Treeview.Heading', font=('Arial', 10, 'bold'))
         
         # Frame principal
-        main_frame = tk.Frame(clientes_window)
-        main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        main_frame = ttk.Frame(clientes_window, style='Clientes.TFrame')
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
         
         # Barra de búsqueda
-        search_frame = tk.Frame(main_frame)
-        search_frame.pack(fill=tk.X, pady=5)
+        search_frame = ttk.Frame(main_frame, style='Clientes.TFrame')
+        search_frame.pack(fill=tk.X, pady=10)
         
-        tk.Label(search_frame, text="Buscar cliente:").pack(side=tk.LEFT)
-        self.busqueda_cliente_entry = tk.Entry(search_frame, width=40)
+        ttk.Label(search_frame, text="Buscar cliente:", style='Clientes.TLabel').pack(side=tk.LEFT)
+        self.busqueda_cliente_entry = ttk.Entry(search_frame, width=40, font=('Arial', 11))
         self.busqueda_cliente_entry.pack(side=tk.LEFT, padx=5)
-        tk.Button(search_frame, text="Buscar", command=self.buscar_clientes).pack(side=tk.LEFT)
+        
+        # Botón de búsqueda con estilo consistente
+        search_btn = ttk.Button(search_frame, text="Buscar", command=self.buscar_clientes, 
+                            style='Clientes.TButton')
+        search_btn.pack(side=tk.LEFT, padx=5)
         
         # Treeview para mostrar clientes
         columns = ("ID", "Nombre", "Apellidos", "Boletos Comprados", "Última Compra", "Total Gastado")
-        self.clientes_tree = ttk.Treeview(main_frame, columns=columns, show="headings")
+        self.clientes_tree = ttk.Treeview(main_frame, columns=columns, show="headings", style='Clientes.Treeview')
         
         # Configurar columnas
         for col in columns:
@@ -4873,24 +4910,26 @@ class SistemaERP:
         scrollbar = ttk.Scrollbar(main_frame, orient=tk.VERTICAL, command=self.clientes_tree.yview)
         self.clientes_tree.configure(yscroll=scrollbar.set)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        self.clientes_tree.pack(fill=tk.BOTH, expand=True)
+        self.clientes_tree.pack(fill=tk.BOTH, expand=True, pady=10)
         
-        # Botón para ver detalles
-        detail_frame = tk.Frame(main_frame)
-        detail_frame.pack(fill=tk.X, pady=5)
+        # Frame para botones inferiores
+        button_frame = ttk.Frame(main_frame, style='Clientes.TFrame')
+        button_frame.pack(fill=tk.X, pady=10)
         
-        tk.Button(detail_frame, text="Ver Detalles", command=self.mostrar_detalle_cliente).pack(side=tk.LEFT)
+        # Botón para ver detalles con estilo consistente
+        detail_btn = ttk.Button(button_frame, text="Ver Detalles", 
+                            command=self.mostrar_detalle_cliente, 
+                            style='Clientes.TButton')
+        detail_btn.pack(side=tk.LEFT, padx=5)
         
         # Cargar todos los clientes inicialmente
         self.cargar_todos_clientes()
-    
+
     def cargar_todos_clientes(self):
-        """Carga todos los clientes que han comprado boletos"""
         conn = sqlite3.connect('erp_autobuses.db')
         try:
             cursor = conn.cursor()
             
-            # Consulta para obtener información agregada de clientes
             cursor.execute("""
                 SELECT 
                     MIN(b.id) as sample_id,
@@ -4904,11 +4943,9 @@ class SistemaERP:
                 ORDER BY ultima_compra DESC
             """)
             
-            # Limpiar treeview
             for item in self.clientes_tree.get_children():
                 self.clientes_tree.delete(item)
                 
-            # Insertar datos
             for row in cursor.fetchall():
                 self.clientes_tree.insert("", tk.END, values=(
                     row[0],  # sample_id
@@ -4923,9 +4960,8 @@ class SistemaERP:
             messagebox.showerror("Error", f"Error al cargar clientes: {str(e)}")
         finally:
             conn.close()
-    
+
     def buscar_clientes(self):
-        """Busca clientes según el texto ingresado"""
         busqueda = self.busqueda_cliente_entry.get().strip()
         
         conn = sqlite3.connect('erp_autobuses.db')
@@ -4933,7 +4969,6 @@ class SistemaERP:
             cursor = conn.cursor()
             
             if busqueda:
-                # Búsqueda con filtro
                 cursor.execute("""
                     SELECT 
                         MIN(b.id) as sample_id,
@@ -4948,14 +4983,11 @@ class SistemaERP:
                     ORDER BY ultima_compra DESC
                 """, (f"%{busqueda}%", f"%{busqueda}%"))
             else:
-                # Si no hay búsqueda, cargar todos
                 return self.cargar_todos_clientes()
             
-            # Limpiar treeview
             for item in self.clientes_tree.get_children():
                 self.clientes_tree.delete(item)
                 
-            # Insertar datos
             for row in cursor.fetchall():
                 self.clientes_tree.insert("", tk.END, values=(
                     row[0],  # sample_id
@@ -4970,9 +5002,8 @@ class SistemaERP:
             messagebox.showerror("Error", f"Error al buscar clientes: {str(e)}")
         finally:
             conn.close()
-    
+
     def mostrar_detalle_cliente(self):
-        """Muestra los detalles de los boletos comprados por un cliente"""
         selected_item = self.clientes_tree.selection()
         if not selected_item:
             messagebox.showwarning("Advertencia", "Por favor seleccione un cliente")
@@ -4984,24 +5015,41 @@ class SistemaERP:
         
         detail_window = tk.Toplevel(self.root)
         detail_window.title(f"Boletos de {nombre} {apellidos}")
-        detail_window.geometry("900x600")
+        detail_window.geometry("1000x700")
+        detail_window.configure(bg='#e6ecf0')
+        
+        # Configurar estilo para la ventana de detalle
+        style = ttk.Style(detail_window)
+        style.configure('Detalle.TFrame', background='#e6ecf0')
+        style.configure('Detalle.TLabel', background='#e6ecf0', font=('Arial', 11))
+        style.configure('Detalle.TButton', font=('Arial', 10, 'bold'), relief='flat',
+                    background='#003366', foreground='white')
+        style.map('Detalle.TButton',
+                background=[('active', '#002244'), ('!disabled', '#003366')],
+                foreground=[('!disabled', 'white')])
+        style.configure('Detalle.Treeview', font=('Arial', 10), rowheight=25)
+        style.configure('Detalle.Treeview.Heading', font=('Arial', 10, 'bold'))
         
         # Frame principal
-        main_frame = tk.Frame(detail_window)
-        main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        main_frame = ttk.Frame(detail_window, style='Detalle.TFrame')
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
         
         # Información resumen del cliente
-        summary_frame = tk.Frame(main_frame, borderwidth=2, relief=tk.GROOVE, padx=10, pady=10)
-        summary_frame.pack(fill=tk.X, pady=5)
+        summary_frame = ttk.Frame(main_frame, style='Detalle.TFrame', borderwidth=2, relief=tk.GROOVE)
+        summary_frame.pack(fill=tk.X, pady=10, padx=10)
         
-        tk.Label(summary_frame, text=f"Cliente: {nombre} {apellidos}", font=("Arial", 12, "bold")).pack(anchor=tk.W)
-        tk.Label(summary_frame, text=f"Total de boletos comprados: {item_data[3]}").pack(anchor=tk.W)
-        tk.Label(summary_frame, text=f"Última compra: {item_data[4]}").pack(anchor=tk.W)
-        tk.Label(summary_frame, text=f"Total gastado: {item_data[5]}").pack(anchor=tk.W)
+        ttk.Label(summary_frame, text=f"Cliente: {nombre} {apellidos}", 
+                font=("Arial", 12, "bold"), style='Detalle.TLabel').pack(anchor=tk.W, padx=10, pady=5)
+        ttk.Label(summary_frame, text=f"Total de boletos comprados: {item_data[3]}", 
+                style='Detalle.TLabel').pack(anchor=tk.W, padx=10)
+        ttk.Label(summary_frame, text=f"Última compra: {item_data[4]}", 
+                style='Detalle.TLabel').pack(anchor=tk.W, padx=10)
+        ttk.Label(summary_frame, text=f"Total gastado: {item_data[5]}", 
+                style='Detalle.TLabel').pack(anchor=tk.W, padx=10, pady=5)
         
         # Treeview para mostrar los boletos del cliente
         columns = ("ID", "Ruta", "Fecha Viaje", "Horario", "Asiento", "Precio", "Fecha Compra")
-        boletos_tree = ttk.Treeview(main_frame, columns=columns, show="headings")
+        boletos_tree = ttk.Treeview(main_frame, columns=columns, show="headings", style='Detalle.Treeview')
         
         # Configurar columnas
         for col in columns:
@@ -5016,7 +5064,7 @@ class SistemaERP:
         scrollbar = ttk.Scrollbar(main_frame, orient=tk.VERTICAL, command=boletos_tree.yview)
         boletos_tree.configure(yscroll=scrollbar.set)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        boletos_tree.pack(fill=tk.BOTH, expand=True)
+        boletos_tree.pack(fill=tk.BOTH, expand=True, pady=10)
         
         # Cargar los boletos del cliente
         conn = sqlite3.connect('erp_autobuses.db')
@@ -5039,7 +5087,6 @@ class SistemaERP:
                 ORDER BY b.fecha_compra DESC
             """, (nombre, apellidos))
             
-            # Insertar datos
             for row in cursor.fetchall():
                 boletos_tree.insert("", tk.END, values=(
                     row[0],  # ID
