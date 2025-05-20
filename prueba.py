@@ -4503,17 +4503,20 @@ class SistemaERP:
         tk.Label(top_frame, text="Módulo de Ventas", 
                 font=("Arial", 16, "bold"), fg='#003366', bg='white').pack(side=tk.LEFT, padx=10)
         
-        # Frame de contenido
+        # Frame de contenido (ahora centrado)
         content_frame = tk.Frame(main_frame, bg='white', bd=2, relief='ridge')
         content_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
-        # Frame para el formulario de venta
-        frame = tk.Frame(content_frame, bg='white')
-        frame.pack(fill=tk.X, pady=10, padx=20)
-
+        # Frame contenedor para centrar el formulario
+        center_container = tk.Frame(content_frame, bg='white')
+        center_container.pack(expand=True, fill=tk.BOTH)
+        
+        # Frame para el formulario de venta (ahora centrado)
+        form_container = tk.Frame(center_container, bg='white')
+        form_container.pack(expand=True)
+        
         # Título
-
-        tk.Label(frame, text="Venta de Boletos", 
+        tk.Label(form_container, text="Venta de Boletos", 
             font=("Arial", 14, 'bold'), fg='#003366', bg='#FFFFFF').pack(pady=(5, 5))
 
         # Logo debajo del título
@@ -4521,16 +4524,16 @@ class SistemaERP:
             logo_img = Image.open("logo.png")  # Asegúrate que la ruta es correcta
             logo_img = logo_img.resize((150, 150), Image.LANCZOS)
             self.logo_tk = ImageTk.PhotoImage(logo_img)  # Mantener en self para evitar garbage collection
-            logo_label = tk.Label(frame, image=self.logo_tk, bg='#FFFFFF')
+            logo_label = tk.Label(form_container, image=self.logo_tk, bg='#FFFFFF')
             logo_label.pack(pady=(0, 10))
         except Exception as e:
             print("Error cargando logo:", e)
 
-        # Frame interno para los campos del formulario (antes form_frame)
-        form_frame = tk.Frame(frame, bg='white')
-        form_frame.pack(fill=tk.X, pady=10)
+        # Frame interno para los campos del formulario
+        form_frame = tk.Frame(form_container, bg='white')
+        form_frame.pack(pady=10)
 
-        # Campos del formulario
+        # Campos del formulario (ahora centrados)
         tk.Label(form_frame, text="Nombre Pasajero:", 
                 bg='white', fg='#003366', font=('Arial', 11)).grid(row=0, column=0, sticky="w", pady=5, padx=5)
         self.nombre_pasajero_entry = tk.Entry(form_frame, width=30, 
@@ -4594,13 +4597,17 @@ class SistemaERP:
                                         bg='white', fg='#003366', font=('Arial', 11, 'bold'))
         self.precio_total_label.pack(side=tk.LEFT)
         
+        # Frame para el botón de vender (centrado)
+        button_frame = tk.Frame(form_container, bg='white')
+        button_frame.pack(pady=20)
+        
         # Botón para vender boleto
-        sell_btn = tk.Button(content_frame, text="Vender Boletos", 
+        sell_btn = tk.Button(button_frame, text="Vender Boletos", 
                         command=self.vender_boletos,
                         bg='#003366', fg='white',
                         font=('Arial', 12, 'bold'),
                         relief='flat', activebackground='#002244')
-        sell_btn.pack(pady=20)
+        sell_btn.pack()
         
         # Configurar estilo para Treeview (si hubiera uno en este módulo)
         style = ttk.Style()
