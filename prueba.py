@@ -4074,149 +4074,188 @@ class SistemaERP:
         self.actualizar_historial()
 
 # =================== MÓDULO DE PROVEEDORES ============================
-# =================== MÓDULO DE PROVEEDORES ============================
     def mostrar_modulo_proveedores(self):
         # Limpiar ventana
         for widget in self.root.winfo_children():
             widget.destroy()
-    
+        
+        # Configurar fondo general
+        self.root.configure(bg='#e6ecf0')
+        
         # Frame principal
-        main_frame = tk.Frame(self.root)
-        main_frame.pack(fill=tk.BOTH, expand=True)
-    
+        main_frame = tk.Frame(self.root, bg='#e6ecf0')
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+        
         # Barra superior
-        top_frame = tk.Frame(main_frame)
+        top_frame = tk.Frame(main_frame, bg='white', bd=2, relief='ridge')
         top_frame.pack(fill=tk.X, padx=10, pady=5)
-    
+        
         # Botón de regreso
-        back_btn = tk.Button(top_frame, text="Volver al Menú", command=self.mostrar_menu_principal)
-        back_btn.pack(side=tk.RIGHT)
-    
+        back_btn = tk.Button(top_frame, text="Volver al Menú", 
+                           command=self.mostrar_menu_principal,
+                           bg='#003366', fg='white',
+                           font=('Arial', 10, 'bold'),
+                           relief='flat', activebackground='#002244')
+        back_btn.pack(side=tk.RIGHT, padx=10, pady=5)
+        
         # Título
-        tk.Label(top_frame, text="Módulo de Proveedores", font=("Arial", 16)).pack(side=tk.LEFT)
-    
+        tk.Label(top_frame, text="Módulo de Proveedores", 
+                font=("Arial", 16, "bold"), fg='#003366', bg='white').pack(side=tk.LEFT, padx=10)
+        
         # Frame de contenido
-        content_frame = tk.Frame(main_frame)
-        content_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
-    
+        content_frame = tk.Frame(main_frame, bg='white', bd=2, relief='ridge')
+        content_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        
         # Controles superiores
-        controls_frame = tk.Frame(content_frame)
-        controls_frame.pack(fill=tk.X, pady=10)
-    
+        controls_frame = tk.Frame(content_frame, bg='white')
+        controls_frame.pack(fill=tk.X, pady=10, padx=20)
+        
         # Botón para agregar proveedor
-        tk.Button(controls_frame, text="Agregar Proveedor", command=self.mostrar_formulario_proveedor).pack(side=tk.LEFT, padx=5)
-    
+        add_btn = tk.Button(controls_frame, text="Agregar Proveedor", 
+                          command=self.mostrar_formulario_proveedor,
+                          bg='#003366', fg='white', 
+                          font=('Arial', 10, 'bold'),
+                          relief='flat', activebackground='#002244')
+        add_btn.pack(side=tk.LEFT, padx=5)
+        
         # Botón para eliminar proveedor
-        tk.Button(controls_frame, text="Eliminar Proveedor", command=self.eliminar_proveedor_seleccionado).pack(side=tk.LEFT, padx=5)
-    
-        # Botón para refrescar
-        tk.Button(controls_frame, text="Refrescar", command=lambda: self.cargar_proveedores(self.tree_proveedores)).pack(side=tk.LEFT, padx=5)
-    
+        del_btn = tk.Button(controls_frame, text="Eliminar Proveedor", 
+                          command=self.eliminar_proveedor_seleccionado,
+                          bg='#990000', fg='white',
+                          font=('Arial', 10, 'bold'),
+                          relief='flat', activebackground='#660000')
+        del_btn.pack(side=tk.LEFT, padx=5)
+        
+        # Configurar estilo para Treeview
+        style = ttk.Style()
+        style.configure("Treeview", 
+                      background="#FFFFFF",
+                      foreground="#003366",
+                      rowheight=25,
+                      fieldbackground="#FFFFFF",
+                      font=("Arial", 10))
+        style.configure("Treeview.Heading", 
+                      font=("Arial", 10, "bold"),
+                      background="#e6ecf0",
+                      foreground="#003366")
+        style.map("Treeview", 
+                background=[("selected", "#003366")], 
+                foreground=[("selected", "#FFFFFF")])
+        
         # Treeview para mostrar proveedores
         columns = ("ID", "Nombre", "Tipo", "Contacto", "Teléfono", "Email")
         self.tree_proveedores = ttk.Treeview(content_frame, columns=columns, show="headings")
-    
-        # Configurar columnas
+        
+        # Configurar columnas (sin anchor='center' para mantener alineación original)
         for col in columns:
             self.tree_proveedores.heading(col, text=col)
             self.tree_proveedores.column(col, width=120)
-    
-        self.tree_proveedores.pack(fill=tk.BOTH, expand=True, pady=10)
-    
+        
+        self.tree_proveedores.pack(fill=tk.BOTH, expand=True, padx=20, pady=10)
+        
         # Scrollbar
         scrollbar = ttk.Scrollbar(content_frame, orient="vertical", command=self.tree_proveedores.yview)
         self.tree_proveedores.configure(yscrollcommand=scrollbar.set)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-    
-        # Cargar datos
-        self.cargar_proveedores(self.tree_proveedores)
+        
+        # Cargar datos iniciales
+        self.actualizar_lista_proveedores()
 
     def mostrar_formulario_proveedor(self):
         # Crear ventana emergente
         popup = tk.Toplevel(self.root)
         popup.title("Agregar Proveedor")
-        popup.geometry("400x300")
-    
+        popup.geometry("400x350")
+        popup.configure(bg='#e6ecf0')
+        popup.resizable(False, False)
+        
         # Frame principal
-        frame = tk.Frame(popup)
-        frame.pack(padx=20, pady=20)
-    
+        frame = tk.Frame(popup, bg='white', bd=2, relief='ridge')
+        frame.pack(padx=20, pady=20, fill=tk.BOTH, expand=True)
+        
         # Campos del formulario
-        tk.Label(frame, text="Nombre:").grid(row=0, column=0, sticky="w", pady=5)
-        nombre_entry = tk.Entry(frame, width=30)
-        nombre_entry.grid(row=0, column=1, pady=5)
-    
-        tk.Label(frame, text="Tipo:").grid(row=1, column=0, sticky="w", pady=5)
-        tipo_combobox = ttk.Combobox(frame, values=["Autobuses", "Computadoras", "Productos de limpieza", "Otros"], width=27)
-        tipo_combobox.grid(row=1, column=1, pady=5)
-    
-        tk.Label(frame, text="Contacto:").grid(row=2, column=0, sticky="w", pady=5)
-        contacto_entry = tk.Entry(frame, width=30)
-        contacto_entry.grid(row=2, column=1, pady=5)
-    
-        tk.Label(frame, text="Teléfono:").grid(row=3, column=0, sticky="w", pady=5)
-        telefono_entry = tk.Entry(frame, width=30)
-        telefono_entry.grid(row=3, column=1, pady=5)
-    
-        tk.Label(frame, text="Email:").grid(row=4, column=0, sticky="w", pady=5)
-        email_entry = tk.Entry(frame, width=30)
-        email_entry.grid(row=4, column=1, pady=5)
-    
+        tk.Label(frame, text="Nombre:", font=('Arial', 10), bg='white', fg='#003366').grid(row=0, column=0, sticky="w", pady=5, padx=10)
+        nombre_entry = tk.Entry(frame, width=30, font=('Arial', 10), relief='solid', bd=1)
+        nombre_entry.grid(row=0, column=1, pady=5, padx=10)
+        
+        tk.Label(frame, text="Tipo:", font=('Arial', 10), bg='white', fg='#003366').grid(row=1, column=0, sticky="w", pady=5, padx=10)
+        tipo_combobox = ttk.Combobox(frame, values=["Autobuses", "Computadoras", "Productos de limpieza", "Otros"], 
+                                   width=27, font=('Arial', 10))
+        tipo_combobox.grid(row=1, column=1, pady=5, padx=10)
+        
+        tk.Label(frame, text="Contacto:", font=('Arial', 10), bg='white', fg='#003366').grid(row=2, column=0, sticky="w", pady=5, padx=10)
+        contacto_entry = tk.Entry(frame, width=30, font=('Arial', 10), relief='solid', bd=1)
+        contacto_entry.grid(row=2, column=1, pady=5, padx=10)
+        
+        tk.Label(frame, text="Teléfono:", font=('Arial', 10), bg='white', fg='#003366').grid(row=3, column=0, sticky="w", pady=5, padx=10)
+        telefono_entry = tk.Entry(frame, width=30, font=('Arial', 10), relief='solid', bd=1)
+        telefono_entry.grid(row=3, column=1, pady=5, padx=10)
+        
+        tk.Label(frame, text="Email:", font=('Arial', 10), bg='white', fg='#003366').grid(row=4, column=0, sticky="w", pady=5, padx=10)
+        email_entry = tk.Entry(frame, width=30, font=('Arial', 10), relief='solid', bd=1)
+        email_entry.grid(row=4, column=1, pady=5, padx=10)
+        
         # Botón para guardar
-        tk.Button(frame, text="Guardar", command=lambda: self.guardar_proveedor(
-            nombre_entry.get(),
-            tipo_combobox.get(),
-            contacto_entry.get(),
-            telefono_entry.get(),
-            email_entry.get(),
-            popup
-        )).grid(row=5, columnspan=2, pady=20)
+        save_btn = tk.Button(frame, text="Guardar", 
+                           command=lambda: self.guardar_proveedor(
+                               nombre_entry.get(),
+                               tipo_combobox.get(),
+                               contacto_entry.get(),
+                               telefono_entry.get(),
+                               email_entry.get(),
+                               popup
+                           ),
+                           bg='#003366', fg='white', 
+                           font=('Arial', 10, 'bold'),
+                           relief='flat', activebackground='#002244')
+        save_btn.grid(row=5, columnspan=2, pady=20)
 
     def guardar_proveedor(self, nombre, tipo, contacto, telefono, email, popup):
         # Validar datos
         if not nombre or not tipo:
             messagebox.showwarning("Advertencia", "Nombre y tipo son obligatorios")
             return
-    
+        
         # Insertar en la base de datos
         conn = sqlite3.connect('erp_autobuses.db')
         cursor = conn.cursor()
-    
+        
         try:
             cursor.execute("""
                 INSERT INTO proveedores (nombre, tipo, contacto, telefono, email)
                 VALUES (?, ?, ?, ?, ?)
             """, (nombre, tipo, contacto, telefono, email))
-        
+            
             conn.commit()
             messagebox.showinfo("Éxito", "Proveedor agregado correctamente")
             popup.destroy()
-            self.cargar_proveedores(self.tree_proveedores)
+            self.actualizar_lista_proveedores()
         except Exception as e:
             messagebox.showerror("Error", f"Error al guardar proveedor: {str(e)}")
             conn.rollback()
         finally:
             conn.close()
 
-    def cargar_proveedores(self, tree):
+    def actualizar_lista_proveedores(self):
+        """Función para actualizar la lista de proveedores automáticamente"""
         # Limpiar treeview
-        for item in tree.get_children():
-            tree.delete(item)
-    
+        for item in self.tree_proveedores.get_children():
+            self.tree_proveedores.delete(item)
+        
         # Cargar proveedores de la base de datos
         conn = sqlite3.connect('erp_autobuses.db')
         cursor = conn.cursor()
-    
+        
         try:
             cursor.execute("""
                 SELECT id, nombre, tipo, contacto, telefono, email
                 FROM proveedores
                 ORDER BY nombre
             """)
-        
+            
             for row in cursor.fetchall():
-                tree.insert("", tk.END, values=row)
-    
+                self.tree_proveedores.insert("", tk.END, values=row)
+        
         except Exception as e:
             messagebox.showerror("Error", f"Error al cargar proveedores: {str(e)}")
         finally:
@@ -4250,7 +4289,7 @@ class SistemaERP:
                 cursor.execute("DELETE FROM proveedores WHERE id = ?", (id_proveedor,))
                 conn.commit()
                 messagebox.showinfo("Éxito", "Proveedor eliminado correctamente")
-                self.cargar_proveedores(self.tree_proveedores)
+                self.actualizar_lista_proveedores()
             except Exception as e:
                 messagebox.showerror("Error", f"Error al eliminar proveedor: {str(e)}")
                 conn.rollback()
