@@ -5630,14 +5630,14 @@ class SistemaERP:
         # Crear ventana emergente
         popup = tk.Toplevel(self.root)
         popup.title("Agregar Horario")
-        popup.geometry('500x500')  # Tamaño adecuado para el contenido
+        popup.geometry('700x600')  # Tamaño aumentado para mejor visualización
         popup.grab_set()  # Hace la ventana modal
         popup.configure(bg="#e6ecf0")  # Color de fondo general
         popup.resizable(False, False)  # Evitar redimensionamiento
         
         # Centrar la ventana en la pantalla
-        ancho_ventana = 500
-        alto_ventana = 500
+        ancho_ventana = 700
+        alto_ventana = 600
         x_pos = (popup.winfo_screenwidth() // 2) - (ancho_ventana // 2)
         y_pos = (popup.winfo_screenheight() // 2) - (alto_ventana // 2)
         popup.geometry(f'{ancho_ventana}x{alto_ventana}+{x_pos}+{y_pos}')
@@ -5665,11 +5665,11 @@ class SistemaERP:
         
         # Frame para el formulario (este será nuestro contenedor centrado)
         form_container = tk.Frame(content_frame, bg="#FFFFFF")
-        form_container.pack(expand=True, padx=40, pady=10)
+        form_container.pack(expand=True, padx=50, pady=20)  # Aumentado el padding
         
         # Frame que contendrá los campos del formulario (alineación izquierda dentro del centro)
         form_fields = tk.Frame(form_container, bg="#FFFFFF")
-        form_fields.pack()
+        form_fields.pack(fill=tk.BOTH, expand=True)
         
         # Estilos consistentes
         estilo_etiqueta = {
@@ -5679,7 +5679,7 @@ class SistemaERP:
             "anchor": "w",
             "padx": 5,
             "pady": 5,
-            "width": 15  # Ancho fijo para alinear
+            "width": 18  # Ancho aumentado para etiquetas
         }
         
         estilo_entrada = {
@@ -5689,7 +5689,7 @@ class SistemaERP:
             "highlightthickness": 1,
             "highlightbackground": "#cccccc",
             "highlightcolor": "#003366",
-            "width": 25
+            "width": 35  # Ancho aumentado para entradas
         }
         
         # Configuración específica para el Combobox
@@ -5698,44 +5698,64 @@ class SistemaERP:
                     font=('Helvetica', 10),
                     borderwidth=1,
                     relief="solid",
-                    padding=5,
-                    width=23)  # Ajustado para igualar el ancho de las entradas
+                    padding=5)
+        
+        # Función para configurar el ancho del Combobox al mostrar la lista
+        def configurar_ancho_combobox(combobox):
+            if combobox['values']:
+                # Obtener el ancho del texto más largo
+                max_len = max(len(str(x)) for x in combobox['values'])
+                # Configurar el ancho del combobox (mínimo 35, máximo 60)
+                new_width = min(max(max_len, 35), 60)
+                combobox.config(width=new_width)
         
         # Campos del formulario (alineados a la izquierda dentro del bloque centrado)
         
         # Ruta
-        tk.Label(form_fields, text="Ruta:", **estilo_etiqueta).grid(row=0, column=0, sticky="w")
-        ruta_combobox = ttk.Combobox(form_fields, style='TCombobox')
-        ruta_combobox.grid(row=0, column=1, pady=5, sticky="w", ipady=3)
+        tk.Label(form_fields, text="Ruta:", **estilo_etiqueta).grid(row=0, column=0, sticky="w", pady=8)
+        ruta_combobox = ttk.Combobox(form_fields, style='TCombobox', width=45)  # Ancho inicial muy grande
+        ruta_combobox.grid(row=0, column=1, pady=8, sticky="ew", ipady=5)
+        ruta_combobox['height'] = 20  # Altura aumentada para la lista desplegable
+        
+        # Configurar el postcommand para ajustar el ancho
+        original_postcommand = ruta_combobox['postcommand']
+        ruta_combobox['postcommand'] = lambda: [original_postcommand() if original_postcommand else None, 
+                                            configurar_ancho_combobox(ruta_combobox)]
         
         # Autobús
-        tk.Label(form_fields, text="Autobús:", **estilo_etiqueta).grid(row=1, column=0, sticky="w")
-        autobus_combobox = ttk.Combobox(form_fields, style='TCombobox')
-        autobus_combobox.grid(row=1, column=1, pady=5, sticky="w", ipady=3)
+        tk.Label(form_fields, text="Autobús:", **estilo_etiqueta).grid(row=1, column=0, sticky="w", pady=8)
+        autobus_combobox = ttk.Combobox(form_fields, style='TCombobox', width=45)  # Ancho inicial muy grande
+        autobus_combobox.grid(row=1, column=1, pady=8, sticky="ew", ipady=5)
+        autobus_combobox['height'] = 20  # Altura aumentada para la lista desplegable
+        
+        # Configurar el postcommand para ajustar el ancho
+        original_postcommand_bus = autobus_combobox['postcommand']
+        autobus_combobox['postcommand'] = lambda: [original_postcommand_bus() if original_postcommand_bus else None, 
+                                                configurar_ancho_combobox(autobus_combobox)]
         
         # Hora Salida
-        tk.Label(form_fields, text="Hora Salida:", **estilo_etiqueta).grid(row=2, column=0, sticky="w")
+        tk.Label(form_fields, text="Hora Salida:", **estilo_etiqueta).grid(row=2, column=0, sticky="w", pady=8)
         hora_salida_entry = tk.Entry(form_fields, **estilo_entrada)
-        hora_salida_entry.grid(row=2, column=1, pady=5, sticky="w")
+        hora_salida_entry.grid(row=2, column=1, pady=8, sticky="w")
         hora_salida_entry.insert(0, "HH:MM")
         
         # Hora Llegada
-        tk.Label(form_fields, text="Hora Llegada:", **estilo_etiqueta).grid(row=3, column=0, sticky="w")
+        tk.Label(form_fields, text="Hora Llegada:", **estilo_etiqueta).grid(row=3, column=0, sticky="w", pady=8)
         hora_llegada_entry = tk.Entry(form_fields, **estilo_entrada)
-        hora_llegada_entry.grid(row=3, column=1, pady=5, sticky="w")
+        hora_llegada_entry.grid(row=3, column=1, pady=8, sticky="w")
         hora_llegada_entry.insert(0, "HH:MM")
         
         # Días de Operación
-        tk.Label(form_fields, text="Días de Operación:", **estilo_etiqueta).grid(row=4, column=0, sticky="w")
+        tk.Label(form_fields, text="Días de Operación:", **estilo_etiqueta).grid(row=4, column=0, sticky="w", pady=8)
         dias_entry = tk.Entry(form_fields, **estilo_entrada)
-        dias_entry.grid(row=4, column=1, pady=5, sticky="w")
+        dias_entry.grid(row=4, column=1, pady=8, sticky="w")
         dias_entry.insert(0, "Lunes-Viernes")
         
         # Cargar rutas y autobuses en los combobox
         self.cargar_rutas_autobuses_combobox(ruta_combobox, autobus_combobox)
         
         # Frame para botones (centrados abajo del formulario)
-        button_frame = tk.Frame(content_frame, bg="#FFFFFF", pady=20)
+        button_frame = tk.Frame(content_frame, bg="#FFFFFF", pady=25)  # Padding vertical aumentado
         button_frame.pack(fill=tk.X)
         
         # Contenedor interno para centrar los botones
@@ -5751,10 +5771,10 @@ class SistemaERP:
             "activeforeground": "#FFFFFF",
             "cursor": "hand2", 
             "relief": "raised", 
-            "padx": 20, 
-            "pady": 8,
+            "padx": 25,  # Aumentado
+            "pady": 10,  # Aumentado
             "bd": 0,
-            "width": 12
+            "width": 15  # Aumentado
         }
         
         estilo_btn_secundario = {
@@ -5765,10 +5785,10 @@ class SistemaERP:
             "activeforeground": "#FFFFFF",
             "cursor": "hand2", 
             "relief": "raised", 
-            "padx": 20, 
-            "pady": 8,
+            "padx": 25,  # Aumentado
+            "pady": 10,  # Aumentado
             "bd": 0,
-            "width": 12
+            "width": 15  # Aumentado
         }
 
         # Botón guardar
@@ -5783,21 +5803,20 @@ class SistemaERP:
                                 popup
                             ),
                             **estilo_btn_primario)
-        guardar_btn.pack(side=tk.LEFT, padx=10)
+        guardar_btn.pack(side=tk.LEFT, padx=15)  # Espacio aumentado
 
         # Botón cancelar
         cancelar_btn = tk.Button(button_container, 
                             text="Cancelar", 
                             command=popup.destroy,
                             **estilo_btn_secundario)
-        cancelar_btn.pack(side=tk.LEFT, padx=10)
+        cancelar_btn.pack(side=tk.LEFT, padx=15)  # Espacio aumentado
+        
+        # Ajustar el grid para que las columnas se expandan correctamente
+        form_fields.columnconfigure(1, weight=1)
         
         # Focus en el primer campo
         ruta_combobox.focus_set()
-        
-        # Agregar atajos de teclado
-        popup.bind("<Return>", lambda event: guardar_btn.invoke())
-        popup.bind("<Escape>", lambda event: popup.destroy())
 
     def cargar_rutas_autobuses_combobox(self, ruta_combobox, autobus_combobox):
         conn = sqlite3.connect('erp_autobuses.db')
