@@ -5331,7 +5331,7 @@ class SistemaERP:
         
         # Título del formulario
         tk.Label(title_frame, 
-                text="Agregar Ruta", 
+                text="Formulario de Ruta", 
                 font=("Helvetica", 14, "bold"), 
                 fg="#FFFFFF", 
                 bg="#003366",
@@ -5493,7 +5493,6 @@ class SistemaERP:
             conn.close()
 
     def mostrar_editar_ruta(self):
-        """Muestra formulario para editar ruta con diseño centrado y alineado"""
         # Obtener ruta seleccionada
         seleccion = self.tree_rutas.selection()
         if not seleccion:
@@ -5506,165 +5505,61 @@ class SistemaERP:
         # Crear ventana emergente
         popup = tk.Toplevel(self.root)
         popup.title("Editar Ruta")
-        popup.geometry('500x450')  # Tamaño adecuado para el contenido
-        popup.grab_set()  # Hace la ventana modal
-        popup.configure(bg="#e6ecf0")  # Color de fondo general
-        popup.resizable(False, False)  # Evitar redimensionamiento
-        
-        # Centrar la ventana en la pantalla
-        ancho_ventana = 500
-        alto_ventana = 450
-        x_pos = (popup.winfo_screenwidth() // 2) - (ancho_ventana // 2)
-        y_pos = (popup.winfo_screenheight() // 2) - (alto_ventana // 2)
-        popup.geometry(f'{ancho_ventana}x{alto_ventana}+{x_pos}+{y_pos}')
+        popup.geometry("400x350")
+        popup.configure(bg='#e6ecf0')
+        popup.resizable(False, False)
 
-        # Frame principal que contendrá todo centrado
-        main_frame = tk.Frame(popup, bg="#e6ecf0")
-        main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
-        
-        # Frame de contenido (este será nuestro bloque centrado)
-        content_frame = tk.Frame(main_frame, bg="#FFFFFF", bd=2, relief="ridge")
-        content_frame.pack(fill=tk.BOTH, expand=True)
-        
-        # Frame para el título (ocupa todo el ancho)
-        title_frame = tk.Frame(content_frame, bg="#003366")
-        title_frame.pack(fill=tk.X, pady=(0, 20))
-        
-        # Título del formulario
-        tk.Label(title_frame, 
-                text="Editar Ruta", 
-                font=("Helvetica", 14, "bold"), 
-                fg="#FFFFFF", 
-                bg="#003366",
-                padx=10,
-                pady=10).pack()
-        
-        # Frame para el formulario (este será nuestro contenedor centrado)
-        form_container = tk.Frame(content_frame, bg="#FFFFFF")
-        form_container.pack(expand=True, padx=40, pady=10)
-        
-        # Frame que contendrá los campos del formulario (alineación izquierda dentro del centro)
-        form_fields = tk.Frame(form_container, bg="#FFFFFF")
-        form_fields.pack()
-        
-        # Estilos consistentes
-        estilo_etiqueta = {
-            "font": ("Helvetica", 10, "bold"), 
-            "fg": "#003366", 
-            "bg": "#FFFFFF",
-            "anchor": "w",
-            "padx": 5,
-            "pady": 5,
-            "width": 18  # Ancho fijo para alinear
-        }
-        
-        estilo_entrada = {
-            "font": ("Helvetica", 10), 
-            "bd": 1, 
-            "relief": "solid",
-            "highlightthickness": 1,
-            "highlightbackground": "#cccccc",
-            "highlightcolor": "#003366",
-            "width": 25
-        }
-        
+        # Frame principal
+        frame = tk.Frame(popup, bg='#FFFFFF', bd=2, relief=tk.RIDGE)
+        frame.pack(padx=20, pady=20, fill=tk.BOTH, expand=True)
+
+        # Estilo para etiquetas
+        label_style = {'bg': '#FFFFFF', 'fg': '#003366', 'font': ('Arial', 10)}
+        entry_style = {'font': ('Arial', 10), 'bd': 1, 'relief': tk.SOLID}
+
         # Campos del formulario con los valores actuales
-        
-        # Origen
-        tk.Label(form_fields, text="Origen:", **estilo_etiqueta).grid(row=0, column=0, sticky="w")
-        origen_entry = tk.Entry(form_fields, **estilo_entrada)
-        origen_entry.grid(row=0, column=1, pady=5, sticky="w")
+        tk.Label(frame, text="Origen:", **label_style).grid(row=0, column=0, sticky="w", pady=5, padx=10)
+        origen_entry = tk.Entry(frame, **entry_style)
+        origen_entry.grid(row=0, column=1, pady=5, padx=10, sticky="ew")
         origen_entry.insert(0, datos_ruta[1])
-        
-        # Destino
-        tk.Label(form_fields, text="Destino:", **estilo_etiqueta).grid(row=1, column=0, sticky="w")
-        destino_entry = tk.Entry(form_fields, **estilo_entrada)
-        destino_entry.grid(row=1, column=1, pady=5, sticky="w")
+
+        tk.Label(frame, text="Destino:", **label_style).grid(row=1, column=0, sticky="w", pady=5, padx=10)
+        destino_entry = tk.Entry(frame, **entry_style)
+        destino_entry.grid(row=1, column=1, pady=5, padx=10, sticky="ew")
         destino_entry.insert(0, datos_ruta[2])
-        
-        # Distancia
-        tk.Label(form_fields, text="Distancia (km):", **estilo_etiqueta).grid(row=2, column=0, sticky="w")
-        distancia_entry = tk.Entry(form_fields, **estilo_entrada)
-        distancia_entry.grid(row=2, column=1, pady=5, sticky="w")
+
+        tk.Label(frame, text="Distancia (km):", **label_style).grid(row=2, column=0, sticky="w", pady=5, padx=10)
+        distancia_entry = tk.Entry(frame, **entry_style)
+        distancia_entry.grid(row=2, column=1, pady=5, padx=10, sticky="ew")
         distancia_entry.insert(0, datos_ruta[3].replace(" km", ""))
-        
-        # Tiempo Estimado
-        tk.Label(form_fields, text="Tiempo Estimado:", **estilo_etiqueta).grid(row=3, column=0, sticky="w")
-        tiempo_entry = tk.Entry(form_fields, **estilo_entrada)
-        tiempo_entry.grid(row=3, column=1, pady=5, sticky="w")
+
+        tk.Label(frame, text="Tiempo Estimado:", **label_style).grid(row=3, column=0, sticky="w", pady=5, padx=10)
+        tiempo_entry = tk.Entry(frame, **entry_style)
+        tiempo_entry.grid(row=3, column=1, pady=5, padx=10, sticky="ew")
         tiempo_entry.insert(0, datos_ruta[4])
-        
-        # Precio Boleto
-        tk.Label(form_fields, text="Precio Boleto:", **estilo_etiqueta).grid(row=4, column=0, sticky="w")
-        precio_entry = tk.Entry(form_fields, **estilo_entrada)
-        precio_entry.grid(row=4, column=1, pady=5, sticky="w")
+
+        tk.Label(frame, text="Precio Boleto:", **label_style).grid(row=4, column=0, sticky="w", pady=5, padx=10)
+        precio_entry = tk.Entry(frame, **entry_style)
+        precio_entry.grid(row=4, column=1, pady=5, padx=10, sticky="ew")
         precio_entry.insert(0, datos_ruta[5].replace("$", ""))
-        
-        # Frame para botones (centrados abajo del formulario)
-        button_frame = tk.Frame(content_frame, bg="#FFFFFF", pady=20)
-        button_frame.pack(fill=tk.X)
-        
-        # Contenedor interno para centrar los botones
-        button_container = tk.Frame(button_frame, bg="#FFFFFF")
-        button_container.pack()
-        
-        # Estilo de botones
-        estilo_btn_primario = {
-            "bg": "#003366", 
-            "fg": "#FFFFFF", 
-            "font": ("Helvetica", 10, "bold"),
-            "activebackground": "#002244", 
-            "activeforeground": "#FFFFFF",
-            "cursor": "hand2", 
-            "relief": "raised", 
-            "padx": 20, 
-            "pady": 8,
-            "bd": 0,
-            "width": 12
-        }
-        
-        estilo_btn_secundario = {
-            "bg": "#990000", 
-            "fg": "#FFFFFF", 
-            "font": ("Helvetica", 10, "bold"),
-            "activebackground": "#660000", 
-            "activeforeground": "#FFFFFF",
-            "cursor": "hand2", 
-            "relief": "raised", 
-            "padx": 20, 
-            "pady": 8,
-            "bd": 0,
-            "width": 12
-        }
 
-        # Botón guardar
-        guardar_btn = tk.Button(button_container, 
-                            text="Guardar", 
-                            command=lambda: self.guardar_edicion_ruta(
-                                ruta_id,
-                                origen_entry.get(),
-                                destino_entry.get(),
-                                distancia_entry.get(),
-                                tiempo_entry.get(),
-                                precio_entry.get(),
-                                popup
-                            ),
-                            **estilo_btn_primario)
-        guardar_btn.pack(side=tk.LEFT, padx=10)
+        # Botón para guardar
+        btn_guardar = tk.Button(frame, text="Guardar Cambios", 
+                              command=lambda: self.guardar_edicion_ruta(
+                                  ruta_id,
+                                  origen_entry.get(),
+                                  destino_entry.get(),
+                                  distancia_entry.get(),
+                                  tiempo_entry.get(),
+                                  precio_entry.get(),
+                                  popup
+                              ),
+                              bg='#003366', fg='#FFFFFF', font=('Arial', 10, 'bold'),
+                              relief=tk.FLAT, activebackground='#002244')
+        btn_guardar.grid(row=5, columnspan=2, pady=20, padx=10, sticky="ew")
 
-        # Botón cancelar
-        cancelar_btn = tk.Button(button_container, 
-                            text="Cancelar", 
-                            command=popup.destroy,
-                            **estilo_btn_secundario)
-        cancelar_btn.pack(side=tk.LEFT, padx=10)
-        
-        # Focus en el primer campo
-        origen_entry.focus_set()
-        
-        # Agregar atajos de teclado
-        popup.bind("<Return>", lambda event: guardar_btn.invoke())
-        popup.bind("<Escape>", lambda event: popup.destroy())
+        # Configurar grid
+        frame.grid_columnconfigure(1, weight=1)
 
     def guardar_edicion_ruta(self, ruta_id, origen, destino, distancia, tiempo, precio, popup):
         # Validación
