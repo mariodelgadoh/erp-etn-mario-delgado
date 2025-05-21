@@ -6003,7 +6003,7 @@ class SistemaERP:
         self.resultado_reporte_frame = tk.Frame(content_frame, bg='white')
         self.resultado_reporte_frame.pack(fill=tk.BOTH, expand=True, pady=10, padx=10)
 
-        # Configurar estilo para Treeview (idéntico al de inventario)
+        # Configurar estilo para Treeview 
         style = ttk.Style()
         style.configure("Treeview", 
                     background="#FFFFFF",
@@ -6115,14 +6115,19 @@ class SistemaERP:
             ax.set_title('Empleados Por Departamento', color='#003366')
             ax.set_ylabel('Cantidad de Empleados', color='#333333')
             ax.tick_params(colors='#333333')
-            plt.setp(ax.get_xticklabels(), rotation=0)  # Cambio aquí
+            plt.setp(ax.get_xticklabels(), rotation=0)
             
-            # Agregar valores en las barras
+            # Ajustar el espacio superior para las etiquetas
+            max_value = max(cantidades)
+            ax.set_ylim(0, max_value * 1.15)  # Añade 15% más espacio arriba
+            
+            # Agregar valores en las barras con mejor formato
             for bar in bars:
                 height = bar.get_height()
                 ax.text(bar.get_x() + bar.get_width()/2., height,
                         f'{height}',
-                        ha='center', va='bottom')
+                        ha='center', va='bottom',
+                        color='#333333', fontweight='bold')
         
             canvas = FigureCanvasTkAgg(figure, self.resultado_reporte_frame)
             canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True, pady=10)
@@ -6201,16 +6206,27 @@ class SistemaERP:
             meses = [row[0] for row in resultados]
             totales = [row[2] for row in resultados]
         
-            ax.plot(meses, totales, 'o-', color='#003366')
+            line = ax.plot(meses, totales, 'o-', color='#003366', linewidth=2, markersize=8)
             ax.set_title('Ventas Totales por Mes', color='#003366')
             ax.set_ylabel('Ventas ($)', color='#333333')
             ax.set_xlabel('Mes', color='#333333')
             ax.tick_params(colors='#333333')
-            plt.setp(ax.get_xticklabels(), rotation=0)  # Cambio aquí
-        
-            # Agregar etiquetas con valores
-            for i, v in enumerate(totales):
-                ax.text(i, v + 1000, f"${v:,.0f}", ha='center', color='#333333')
+            plt.setp(ax.get_xticklabels(), rotation=0)
+            
+            # Ajustar los límites del eje Y para mejor visualización
+            max_value = max(totales)
+            min_value = min(totales)
+            ax.set_ylim(min_value * 0.9, max_value * 1.15)  # Margen del 10% abajo y 15% arriba
+            
+            # Agregar etiquetas con valores mejoradas
+            for i, (mes, v) in enumerate(zip(meses, totales)):
+                ax.text(i, v + (max_value * 0.05),  # 5% del valor máximo como offset
+                    f"${v:,.0f}",
+                    ha='center', 
+                    va='bottom',
+                    color='#003366',
+                    fontweight='bold',
+                    bbox=dict(facecolor='white', edgecolor='#003366', boxstyle='round,pad=0.2'))
         
             canvas = FigureCanvasTkAgg(figure, self.resultado_reporte_frame)
             canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True, pady=10)
@@ -6291,8 +6307,12 @@ class SistemaERP:
             ax.set_ylabel('Gastos ($)', color='#333333')
             ax.set_xlabel('Mes', color='#333333')
             ax.tick_params(colors='#333333')
-            plt.setp(ax.get_xticklabels(), rotation=0)  # Cambio aquí
-        
+            plt.setp(ax.get_xticklabels(), rotation=0)
+            
+            # Ajustar el espacio superior para las etiquetas
+            max_value = max(totales)
+            ax.set_ylim(0, max_value * 1.15)  # Añade 15% más espacio arriba
+            
             # Agregar etiquetas con valores
             for bar in bars:
                 height = bar.get_height()
