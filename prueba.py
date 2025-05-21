@@ -1,4 +1,4 @@
-# Sistema ERP para Empresa de Autobuses
+# Sistema ERP para Empresa de Autobuses Llamada ETN (Enlaces Terrestres Nacionales) ------- Mario Jesús Delgado Hernández
 # Este sistema incluye módulos para diferentes departamentos:
 # - Admin: Acceso completo a todo el sistema
 # - RH: Gestión de personal (contratación, despido, pagos)
