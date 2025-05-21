@@ -6030,7 +6030,7 @@ class SistemaERP:
             messagebox.showwarning("Advertencia", "Debe seleccionar un tipo de reporte")
             return
 
-        if tipo_reporte == "Empleados por Departamento":
+        if tipo_reporte == "Empleados Por Departamento":
             self.generar_reporte_empleados_departamento()
         elif tipo_reporte == "Ventas Totales":
             self.generar_reporte_ventas_totales()
@@ -6069,7 +6069,7 @@ class SistemaERP:
         
             # Crear tabla
             tk.Label(self.resultado_reporte_frame, 
-                    text="Empleados por Departamento", 
+                    text="Empleados Por Departamento", 
                     font=("Arial", 14, "bold"),
                     fg='#003366',
                     bg='white').pack(pady=10)
@@ -6112,10 +6112,10 @@ class SistemaERP:
             cantidades = [row[1] for row in resultados]
         
             bars = ax.bar(departamentos, cantidades, color='#003366')
-            ax.set_title('Empleados por Departamento', color='#003366')
+            ax.set_title('Empleados Por Departamento', color='#003366')
             ax.set_ylabel('Cantidad de Empleados', color='#333333')
             ax.tick_params(colors='#333333')
-            plt.setp(ax.get_xticklabels(), rotation=45, ha='right')
+            plt.setp(ax.get_xticklabels(), rotation=0)  # Cambio aquí
             
             # Agregar valores en las barras
             for bar in bars:
@@ -6206,7 +6206,7 @@ class SistemaERP:
             ax.set_ylabel('Ventas ($)', color='#333333')
             ax.set_xlabel('Mes', color='#333333')
             ax.tick_params(colors='#333333')
-            plt.setp(ax.get_xticklabels(), rotation=45, ha='right')
+            plt.setp(ax.get_xticklabels(), rotation=0)  # Cambio aquí
         
             # Agregar etiquetas con valores
             for i, v in enumerate(totales):
@@ -6291,7 +6291,7 @@ class SistemaERP:
             ax.set_ylabel('Gastos ($)', color='#333333')
             ax.set_xlabel('Mes', color='#333333')
             ax.tick_params(colors='#333333')
-            plt.setp(ax.get_xticklabels(), rotation=45, ha='right')
+            plt.setp(ax.get_xticklabels(), rotation=0)  # Cambio aquí
         
             # Agregar etiquetas con valores
             for bar in bars:
