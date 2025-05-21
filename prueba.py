@@ -5931,44 +5931,93 @@ class SistemaERP:
         for widget in self.root.winfo_children():
             widget.destroy()
 
+        # Configurar fondo general
+        self.root.configure(bg='#e6ecf0')
+        
         # Frame principal
-        main_frame = tk.Frame(self.root)
-        main_frame.pack(fill=tk.BOTH, expand=True)
+        main_frame = tk.Frame(self.root, bg='#e6ecf0')
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
 
         # Barra superior
-        top_frame = tk.Frame(main_frame)
+        top_frame = tk.Frame(main_frame, bg='white', bd=2, relief='ridge')
         top_frame.pack(fill=tk.X, padx=10, pady=5)
 
         # Botón de regreso
-        back_btn = tk.Button(top_frame, text="Volver al Menú", command=self.mostrar_menu_principal)
-        back_btn.pack(side=tk.RIGHT)
+        back_btn = tk.Button(top_frame, 
+                            text="Volver al Menú", 
+                            command=self.mostrar_menu_principal,
+                            bg='#003366', 
+                            fg='white',
+                            font=('Arial', 10, 'bold'),
+                            relief='flat', 
+                            activebackground='#002244',
+                            activeforeground='white',
+                            cursor='hand2')
+        back_btn.pack(side=tk.RIGHT, padx=10, pady=5)
 
         # Título
-        tk.Label(top_frame, text="Reportes Generales", font=("Arial", 16)).pack(side=tk.LEFT)
+        tk.Label(top_frame, 
+                text="Reportes Generales", 
+                font=("Arial", 16, "bold"), 
+                fg='#003366', 
+                bg='white').pack(side=tk.LEFT, padx=10)
 
         # Frame de contenido
-        content_frame = tk.Frame(main_frame)
-        content_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+        content_frame = tk.Frame(main_frame, bg='white', bd=2, relief='ridge')
+        content_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
         # Opciones para generar reportes
-        options_frame = tk.Frame(content_frame)
-        options_frame.pack(fill=tk.X, pady=10)
+        options_frame = tk.Frame(content_frame, bg='white')
+        options_frame.pack(fill=tk.X, pady=10, padx=10)
 
         # Selector de tipo de reporte
-        tk.Label(options_frame, text="Tipo de Reporte:").pack(side=tk.LEFT, padx=5)
-        self.tipo_reporte = ttk.Combobox(options_frame, values=[
-            "Empleados por Departamento", 
-            "Ventas Totales",
-            "Gastos Totales"
-        ], width=20)
+        tk.Label(options_frame, 
+                text="Tipo de Reporte:", 
+                font=('Arial', 12),
+                bg='white').pack(side=tk.LEFT, padx=5)
+        
+        # Lista desplegable con el mismo estilo que en inventario
+        self.tipo_reporte = ttk.Combobox(options_frame, 
+                                    values=[
+                                        "Empleados Por Departamento", 
+                                        "Ventas Totales",
+                                        "Gastos Totales"
+                                    ], 
+                                    width=25,
+                                    font=('Arial', 10))  # Mismo tamaño de fuente que en inventario
         self.tipo_reporte.pack(side=tk.LEFT, padx=5)
 
         # Botón para generar
-        tk.Button(options_frame, text="Generar Reporte", command=self.generar_reporte_general).pack(side=tk.LEFT, padx=10)
+        tk.Button(options_frame, 
+                text="Generar Reporte", 
+                command=self.generar_reporte_general,
+                bg='#003366',
+                fg='white',
+                font=('Arial', 10, 'bold'),
+                relief='flat',
+                activebackground='#002244',
+                activeforeground='white',
+                cursor='hand2').pack(side=tk.LEFT, padx=10)
 
         # Frame para resultado
-        self.resultado_reporte_frame = tk.Frame(content_frame)
-        self.resultado_reporte_frame.pack(fill=tk.BOTH, expand=True, pady=20)
+        self.resultado_reporte_frame = tk.Frame(content_frame, bg='white')
+        self.resultado_reporte_frame.pack(fill=tk.BOTH, expand=True, pady=10, padx=10)
+
+        # Configurar estilo para Treeview (idéntico al de inventario)
+        style = ttk.Style()
+        style.configure("Treeview", 
+                    background="#FFFFFF",
+                    foreground="#003366",
+                    rowheight=25,
+                    fieldbackground="#FFFFFF",
+                    font=("Arial", 10))
+        style.configure("Treeview.Heading", 
+                    font=("Arial", 10, "bold"),
+                    background="#e6ecf0",
+                    foreground="#003366")
+        style.map("Treeview", 
+                background=[("selected", "#003366")], 
+                foreground=[("selected", "#FFFFFF")])
 
     def generar_reporte_general(self):
         # Limpiar frame de resultados
@@ -6012,40 +6061,71 @@ class SistemaERP:
             resultados = cursor.fetchall()
         
             if not resultados:
-                tk.Label(self.resultado_reporte_frame, text="No hay empleados registrados").pack(pady=20)
+                tk.Label(self.resultado_reporte_frame, 
+                        text="No hay empleados registrados",
+                        font=('Arial', 12),
+                        bg='white').pack(pady=20)
                 return
         
             # Crear tabla
-            tk.Label(self.resultado_reporte_frame, text="Empleados por Departamento", font=("Arial", 14, "bold")).pack(pady=10)
+            tk.Label(self.resultado_reporte_frame, 
+                    text="Empleados por Departamento", 
+                    font=("Arial", 14, "bold"),
+                    fg='#003366',
+                    bg='white').pack(pady=10)
         
-            tree = ttk.Treeview(self.resultado_reporte_frame, columns=("Departamento", "Cantidad", "Total Salarios"), show="headings")
+            # Frame para contener tabla y scrollbar
+            table_container = tk.Frame(self.resultado_reporte_frame, bg='white')
+            table_container.pack(fill=tk.BOTH, expand=True)
+            
+            # Scrollbar
+            scrollbar = ttk.Scrollbar(table_container)
+            scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+            
+            tree = ttk.Treeview(table_container, 
+                            columns=("Departamento", "Cantidad", "Total Salarios"), 
+                            show="headings",
+                            yscrollcommand=scrollbar.set)
+            
+            scrollbar.config(command=tree.yview)
+            
             tree.heading("Departamento", text="Departamento")
             tree.heading("Cantidad", text="Cantidad")
             tree.heading("Total Salarios", text="Total Salarios ($)")
         
-            tree.column("Departamento", width=150)
-            tree.column("Cantidad", width=100)
-            tree.column("Total Salarios", width=150)
+            tree.column("Departamento", width=150, anchor=tk.CENTER)
+            tree.column("Cantidad", width=100, anchor=tk.CENTER)
+            tree.column("Total Salarios", width=150, anchor=tk.CENTER)
         
             for row in resultados:
                 tree.insert("", tk.END, values=(row[0], row[1], f"${row[2]:,.2f}"))
         
-            tree.pack(fill=tk.BOTH, expand=True, pady=10)
+            tree.pack(fill=tk.BOTH, expand=True)
         
             # Crear gráfico
             figure = plt.Figure(figsize=(6, 4), dpi=100)
             ax = figure.add_subplot(111)
+            figure.patch.set_facecolor('#FFFFFF')
+            ax.set_facecolor('#FFFFFF')
         
             departamentos = [row[0] for row in resultados]
             cantidades = [row[1] for row in resultados]
         
-            ax.bar(departamentos, cantidades)
-            ax.set_title('Empleados por Departamento')
-            ax.set_ylabel('Cantidad de Empleados')
+            bars = ax.bar(departamentos, cantidades, color='#003366')
+            ax.set_title('Empleados por Departamento', color='#003366')
+            ax.set_ylabel('Cantidad de Empleados', color='#333333')
+            ax.tick_params(colors='#333333')
             plt.setp(ax.get_xticklabels(), rotation=45, ha='right')
+            
+            # Agregar valores en las barras
+            for bar in bars:
+                height = bar.get_height()
+                ax.text(bar.get_x() + bar.get_width()/2., height,
+                        f'{height}',
+                        ha='center', va='bottom')
         
             canvas = FigureCanvasTkAgg(figure, self.resultado_reporte_frame)
-            canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+            canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True, pady=10)
         
         except Exception as e:
             messagebox.showerror("Error", f"Error al generar reporte: {str(e)}")
@@ -6071,45 +6151,69 @@ class SistemaERP:
             resultados = cursor.fetchall()
         
             if not resultados:
-                tk.Label(self.resultado_reporte_frame, text="No hay ventas registradas").pack(pady=20)
+                tk.Label(self.resultado_reporte_frame, 
+                        text="No hay ventas registradas",
+                        font=('Arial', 12),
+                        bg='white').pack(pady=20)
                 return
         
             # Crear tabla
-            tk.Label(self.resultado_reporte_frame, text="Ventas Totales por Mes", font=("Arial", 14, "bold")).pack(pady=10)
+            tk.Label(self.resultado_reporte_frame, 
+                    text="Ventas Totales por Mes", 
+                    font=("Arial", 14, "bold"),
+                    fg='#003366',
+                    bg='white').pack(pady=10)
         
-            tree = ttk.Treeview(self.resultado_reporte_frame, columns=("Mes", "Boletos", "Total"), show="headings")
+            # Frame para contener tabla y scrollbar
+            table_container = tk.Frame(self.resultado_reporte_frame, bg='white')
+            table_container.pack(fill=tk.BOTH, expand=True)
+            
+            # Scrollbar
+            scrollbar = ttk.Scrollbar(table_container)
+            scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+            
+            tree = ttk.Treeview(table_container, 
+                            columns=("Mes", "Boletos", "Total"), 
+                            show="headings",
+                            yscrollcommand=scrollbar.set)
+            
+            scrollbar.config(command=tree.yview)
+            
             tree.heading("Mes", text="Mes")
             tree.heading("Boletos", text="Boletos")
             tree.heading("Total", text="Total ($)")
         
-            tree.column("Mes", width=100)
-            tree.column("Boletos", width=100)
-            tree.column("Total", width=150)
+            tree.column("Mes", width=100, anchor=tk.CENTER)
+            tree.column("Boletos", width=100, anchor=tk.CENTER)
+            tree.column("Total", width=150, anchor=tk.CENTER)
         
             for row in resultados:
                 tree.insert("", tk.END, values=(row[0], row[1], f"${row[2]:,.2f}"))
         
-            tree.pack(fill=tk.BOTH, expand=True, pady=10)
+            tree.pack(fill=tk.BOTH, expand=True)
         
             # Crear gráfico de líneas
             figure = plt.Figure(figsize=(6, 4), dpi=100)
             ax = figure.add_subplot(111)
+            figure.patch.set_facecolor('#FFFFFF')
+            ax.set_facecolor('#FFFFFF')
         
             meses = [row[0] for row in resultados]
             totales = [row[2] for row in resultados]
         
-            ax.plot(meses, totales, 'o-')
-            ax.set_title('Ventas Totales por Mes')
-            ax.set_ylabel('Ventas ($)')
-            ax.set_xlabel('Mes')
+            ax.plot(meses, totales, 'o-', color='#003366')
+            ax.set_title('Ventas Totales por Mes', color='#003366')
+            ax.set_ylabel('Ventas ($)', color='#333333')
+            ax.set_xlabel('Mes', color='#333333')
+            ax.tick_params(colors='#333333')
             plt.setp(ax.get_xticklabels(), rotation=45, ha='right')
         
             # Agregar etiquetas con valores
             for i, v in enumerate(totales):
-                ax.text(i, v + 1000, f"${v:,.0f}", ha='center')
+                ax.text(i, v + 1000, f"${v:,.0f}", ha='center', color='#333333')
         
             canvas = FigureCanvasTkAgg(figure, self.resultado_reporte_frame)
-            canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+            canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True, pady=10)
         
         except Exception as e:
             messagebox.showerror("Error", f"Error al generar reporte: {str(e)}")
@@ -6134,35 +6238,59 @@ class SistemaERP:
             resultados = cursor.fetchall()
         
             if not resultados:
-                tk.Label(self.resultado_reporte_frame, text="No hay gastos registrados").pack(pady=20)
+                tk.Label(self.resultado_reporte_frame, 
+                        text="No hay gastos registrados",
+                        font=('Arial', 12),
+                        bg='white').pack(pady=20)
                 return
         
             # Crear tabla
-            tk.Label(self.resultado_reporte_frame, text="Gastos Totales por Mes", font=("Arial", 14, "bold")).pack(pady=10)
+            tk.Label(self.resultado_reporte_frame, 
+                    text="Gastos Totales por Mes", 
+                    font=("Arial", 14, "bold"),
+                    fg='#003366',
+                    bg='white').pack(pady=10)
         
-            tree = ttk.Treeview(self.resultado_reporte_frame, columns=("Mes", "Total"), show="headings")
+            # Frame para contener tabla y scrollbar
+            table_container = tk.Frame(self.resultado_reporte_frame, bg='white')
+            table_container.pack(fill=tk.BOTH, expand=True)
+            
+            # Scrollbar
+            scrollbar = ttk.Scrollbar(table_container)
+            scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+            
+            tree = ttk.Treeview(table_container, 
+                            columns=("Mes", "Total"), 
+                            show="headings",
+                            yscrollcommand=scrollbar.set)
+            
+            scrollbar.config(command=tree.yview)
+            
             tree.heading("Mes", text="Mes")
             tree.heading("Total", text="Total ($)")
         
-            tree.column("Mes", width=100)
-            tree.column("Total", width=150)
+            tree.column("Mes", width=100, anchor=tk.CENTER)
+            tree.column("Total", width=150, anchor=tk.CENTER)
         
             for row in resultados:
                 tree.insert("", tk.END, values=(row[0], f"${row[1]:,.2f}"))
         
-            tree.pack(fill=tk.BOTH, expand=True, pady=10)
+            tree.pack(fill=tk.BOTH, expand=True)
         
             # Crear gráfico de barras
             figure = plt.Figure(figsize=(6, 4), dpi=100)
             ax = figure.add_subplot(111)
+            figure.patch.set_facecolor('#FFFFFF')
+            ax.set_facecolor('#FFFFFF')
         
             meses = [row[0] for row in resultados]
             totales = [row[1] for row in resultados]
         
-            bars = ax.bar(meses, totales, color='red')
-            ax.set_title('Gastos Totales por Mes')
-            ax.set_ylabel('Gastos ($)')
-            ax.set_xlabel('Mes')
+            bars = ax.bar(meses, totales, color='#990000')
+            ax.set_title('Gastos Totales por Mes', color='#003366')
+            ax.set_ylabel('Gastos ($)', color='#333333')
+            ax.set_xlabel('Mes', color='#333333')
+            ax.tick_params(colors='#333333')
             plt.setp(ax.get_xticklabels(), rotation=45, ha='right')
         
             # Agregar etiquetas con valores
@@ -6170,16 +6298,15 @@ class SistemaERP:
                 height = bar.get_height()
                 ax.text(bar.get_x() + bar.get_width()/2., height,
                         f'${height:,.0f}',
-                        ha='center', va='bottom')
+                        ha='center', va='bottom', color='#333333')
         
             canvas = FigureCanvasTkAgg(figure, self.resultado_reporte_frame)
-            canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+            canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True, pady=10)
         
         except Exception as e:
             messagebox.showerror("Error", f"Error al generar reporte: {str(e)}")
         finally:
             conn.close()
-
 # =================== FUNCIÓN PRINCIPAL ================================
 def main():
     root = tk.Tk()
