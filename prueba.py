@@ -2062,37 +2062,62 @@ class SistemaERP:
             tk.Label(tabla_frame, text=f"${balance:,.2f}", 
                     font=("Arial", 12, "bold"), bg='white', fg=balance_color).grid(row=2, column=1, padx=10, pady=5)
             
-            # Crear gráfico
+            # Crear gráfico con mejoras
             figure = plt.Figure(figsize=(6, 4), dpi=100, facecolor='white')
             ax = figure.add_subplot(111)
-            ax.set_facecolor('white')
+            ax.set_facecolor('#f8f9fa')  # Fondo más claro para mejor contraste
             
-            # Configurar colores del gráfico
-            ax.spines['bottom'].set_color('#003366')
-            ax.spines['top'].set_color('#003366') 
-            ax.spines['right'].set_color('#003366')
-            ax.spines['left'].set_color('#003366')
-            ax.tick_params(axis='x', colors='#003366')
-            ax.tick_params(axis='y', colors='#003366')
-            ax.yaxis.label.set_color('#003366')
-            ax.xaxis.label.set_color('#003366')
+            # Configurar estilo del gráfico
+            for spine in ['bottom', 'top', 'right', 'left']:
+                ax.spines[spine].set_color('#dee2e6')
+                ax.spines[spine].set_linewidth(0.5)
+                
+            ax.tick_params(axis='both', colors='#495057', labelsize=9)
+            ax.yaxis.label.set_color('#495057')
+            ax.xaxis.label.set_color('#495057')
             ax.title.set_color('#003366')
             
             labels = ['Ingresos', 'Egresos']
             values = [total_ingresos, total_egresos]
-            colors = ['#4CAF50', '#F44336']  # Verde y rojo
+            colors = ['#2e8b57', '#dc3545']  # Verde más oscuro y rojo más intenso
             
-            ax.bar(labels, values, color=colors)
-            ax.set_title('Ingresos vs Egresos', color='#003366')
-            ax.set_ylabel('Monto ($)', color='#003366')
-            ax.grid(True, color='#e6ecf0')
+            bars = ax.bar(labels, values, color=colors, width=0.6, edgecolor='white', linewidth=1)
+            ax.set_title('Comparación de Ingresos y Egresos', pad=15, fontsize=12, fontweight='bold')
+            ax.set_ylabel('Monto ($)', fontsize=10)
             
-            # Agregar etiquetas con valores
-            for i, v in enumerate(values):
-                ax.text(i, v + 0.1, f"${v:,.2f}", ha='center', color='#003366')
+            # Ajustar límites del eje Y para mejor visualización
+            max_value = max(values)
+            ax.set_ylim(0, max_value * 1.25)  # 25% más de espacio para las etiquetas
+            
+            # Agregar etiquetas con valores mejoradas
+            for bar in bars:
+                height = bar.get_height()
+                ax.text(bar.get_x() + bar.get_width()/2., 
+                        height + (max_value * 0.02),  # 2% del valor máximo como offset
+                        f"${height:,.2f}",
+                        ha='center', 
+                        va='bottom',
+                        color='#212529',
+                        fontsize=10,
+                        fontweight='bold',
+                        bbox=dict(facecolor='white', 
+                                edgecolor='#dee2e6', 
+                                boxstyle='round,pad=0.2',
+                                alpha=0.8))
+            
+            # Grid más sutil
+            ax.grid(axis='y', linestyle='--', alpha=0.5, color='#adb5bd')
+            
+            # Añadir línea de balance cero para referencia
+            if total_ingresos > 0 or total_egresos > 0:
+                ax.axhline(0, color='#495057', linestyle='-', linewidth=0.5)
+            
+            # Ajustar márgenes
+            figure.tight_layout()
+            figure.subplots_adjust(top=0.85)
             
             canvas = FigureCanvasTkAgg(figure, self.resultado_frame)
-            canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+            canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True, pady=(0, 10))
             
         except Exception as e:
             messagebox.showerror("Error", f"Error al generar informe: {str(e)}")
