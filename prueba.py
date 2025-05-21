@@ -5153,68 +5153,115 @@ class SistemaERP:
         # Limpiar ventana
         for widget in self.root.winfo_children():
             widget.destroy()
-    
+        
+        # Configurar fondo general
+        self.root.configure(bg='#e6ecf0')
+        
         # Frame principal
-        main_frame = tk.Frame(self.root)
-        main_frame.pack(fill=tk.BOTH, expand=True)
-    
+        main_frame = tk.Frame(self.root, bg='#e6ecf0')
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+        
         # Barra superior
-        top_frame = tk.Frame(main_frame)
+        top_frame = tk.Frame(main_frame, bg='white', bd=2, relief='ridge')
         top_frame.pack(fill=tk.X, padx=10, pady=5)
-    
+        
         # Botón de regreso
-        back_btn = tk.Button(top_frame, text="Volver al Menú", command=self.mostrar_menu_principal)
-        back_btn.pack(side=tk.RIGHT)
-    
+        back_btn = tk.Button(top_frame, text="Volver al Menú", 
+                           command=self.mostrar_menu_principal,
+                           bg='#003366', fg='white',
+                           font=('Arial', 10, 'bold'),
+                           relief='flat', activebackground='#002244')
+        back_btn.pack(side=tk.RIGHT, padx=10, pady=5)
+        
         # Título
-        tk.Label(top_frame, text="Módulo de Logística", font=("Arial", 16)).pack(side=tk.LEFT)
-    
+        tk.Label(top_frame, text="Módulo de Logística", 
+                font=("Arial", 16, "bold"), fg='#003366', bg='white').pack(side=tk.LEFT, padx=10)
+        
         # Frame de pestañas
-        tab_control = ttk.Notebook(main_frame)
-    
+        style = ttk.Style()
+        style.configure('TNotebook', background='#e6ecf0')
+        style.configure('TNotebook.Tab', 
+                      font=('Arial', 10, 'bold'), 
+                      padding=[10, 5],
+                      background='#e6ecf0',
+                      foreground='#003366')
+        
+        tab_control = ttk.Notebook(main_frame, style='TNotebook')
+        
         # Pestaña Rutas
-        tab_rutas = tk.Frame(tab_control)
+        tab_rutas = tk.Frame(tab_control, bg='white', bd=2, relief='ridge')
         tab_control.add(tab_rutas, text="Rutas")
         self.setup_tab_rutas(tab_rutas)
-    
+
         # Pestaña Horarios
-        tab_horarios = tk.Frame(tab_control)
+        tab_horarios = tk.Frame(tab_control, bg='white', bd=2, relief='ridge')
         tab_control.add(tab_horarios, text="Horarios")
         self.setup_tab_horarios(tab_horarios)
-    
-        tab_control.pack(expand=1, fill="both")
+
+        tab_control.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
     def setup_tab_rutas(self, parent):
         # Frame principal
-        frame = tk.Frame(parent)
+        frame = tk.Frame(parent, bg='white')
         frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
-    
+
         # Controles superiores
-        controls_frame = tk.Frame(frame)
+        controls_frame = tk.Frame(frame, bg='white')
         controls_frame.pack(fill=tk.X, pady=10)
-    
-        # Botones
-        tk.Button(controls_frame, text="Agregar Ruta", command=self.mostrar_formulario_ruta).pack(side=tk.LEFT, padx=5)
-        tk.Button(controls_frame, text="Editar Ruta", command=self.mostrar_editar_ruta).pack(side=tk.LEFT, padx=5)
-        tk.Button(controls_frame, text="Eliminar Ruta", command=self.eliminar_ruta).pack(side=tk.LEFT, padx=5)
-        tk.Button(controls_frame, text="Refrescar", command=lambda: self.cargar_rutas(self.tree_rutas)).pack(side=tk.LEFT, padx=5)
-    
+
+        # Botones con estilo consistente
+        btn_style = {
+            'bg': '#003366',
+            'fg': 'white',
+            'font': ('Arial', 10, 'bold'),
+            'relief': 'flat',
+            'activebackground': '#002244'
+        }
+
+        tk.Button(controls_frame, text="Agregar Ruta", 
+                 command=self.mostrar_formulario_ruta, **btn_style).pack(side=tk.LEFT, padx=5)
+        tk.Button(controls_frame, text="Editar Ruta", 
+                 command=self.mostrar_editar_ruta, **btn_style).pack(side=tk.LEFT, padx=5)
+        
+        # Botón de eliminar con estilo rojo
+        tk.Button(controls_frame, text="Eliminar Ruta", 
+                 command=self.eliminar_ruta,
+                 bg='#990000', fg='white',
+                 font=('Arial', 10, 'bold'),
+                 relief='flat', activebackground='#660000').pack(side=tk.LEFT, padx=5)
+
+        # Configurar estilo para Treeview
+        style = ttk.Style()
+        style.configure("Treeview", 
+                      background="#FFFFFF",
+                      foreground="#003366",
+                      rowheight=25,
+                      fieldbackground="#FFFFFF",
+                      font=("Arial", 10))
+        style.configure("Treeview.Heading", 
+                      font=("Arial", 10, "bold"),
+                      background="#e6ecf0",
+                      foreground="#003366")
+        style.map("Treeview", 
+                background=[("selected", "#003366")], 
+                foreground=[("selected", "#FFFFFF")])
+
         # Treeview para mostrar rutas
         columns = ("ID", "Origen", "Destino", "Distancia (km)", "Tiempo Estimado (minutos)", "Precio Boleto")
         self.tree_rutas = ttk.Treeview(frame, columns=columns, show="headings")
-    
+
         # Configurar columnas
         for col in columns:
             self.tree_rutas.heading(col, text=col)
             self.tree_rutas.column(col, width=120)
-    
-        self.tree_rutas.pack(fill=tk.BOTH, expand=True, pady=10)
-    
+
+        self.tree_rutas.pack(fill=tk.BOTH, expand=True, padx=20, pady=10)
+
         # Scrollbar
         scrollbar = ttk.Scrollbar(frame, orient="vertical", command=self.tree_rutas.yview)
         self.tree_rutas.configure(yscrollcommand=scrollbar.set)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-    
+
         # Cargar datos
         self.cargar_rutas(self.tree_rutas)
 
@@ -5224,13 +5271,13 @@ class SistemaERP:
         if not seleccion:
             messagebox.showwarning("Advertencia", "Por favor seleccione una ruta")
             return
-    
+
         ruta_id = self.tree_rutas.item(seleccion[0], "values")[0]
-    
+
         # Confirmar eliminación
         if not messagebox.askyesno("Confirmar", "¿Está seguro de eliminar esta ruta?\nEsta acción no se puede deshacer."):
             return
-    
+
         conn = sqlite3.connect('erp_autobuses.db')
         try:
             cursor = conn.cursor()
@@ -5257,49 +5304,62 @@ class SistemaERP:
         # Crear ventana emergente
         popup = tk.Toplevel(self.root)
         popup.title("Agregar Ruta")
-        popup.geometry("400x300")
-    
+        popup.geometry("400x350")
+        popup.configure(bg='#e6ecf0')
+        popup.resizable(False, False)
+
         # Frame principal
-        frame = tk.Frame(popup)
-        frame.pack(padx=20, pady=20)
-    
+        frame = tk.Frame(popup, bg='#FFFFFF', bd=2, relief=tk.RIDGE)
+        frame.pack(padx=20, pady=20, fill=tk.BOTH, expand=True)
+
+        # Estilo para etiquetas
+        label_style = {'bg': '#FFFFFF', 'fg': '#003366', 'font': ('Arial', 10)}
+        entry_style = {'font': ('Arial', 10), 'bd': 1, 'relief': tk.SOLID}
+
         # Campos del formulario
-        tk.Label(frame, text="Origen:").grid(row=0, column=0, sticky="w", pady=5)
-        origen_entry = tk.Entry(frame, width=30)
-        origen_entry.grid(row=0, column=1, pady=5)
-    
-        tk.Label(frame, text="Destino:").grid(row=1, column=0, sticky="w", pady=5)
-        destino_entry = tk.Entry(frame, width=30)
-        destino_entry.grid(row=1, column=1, pady=5)
-    
-        tk.Label(frame, text="Distancia (km):").grid(row=2, column=0, sticky="w", pady=5)
-        distancia_entry = tk.Entry(frame, width=30)
-        distancia_entry.grid(row=2, column=1, pady=5)
-    
-        tk.Label(frame, text="Tiempo Estimado:").grid(row=3, column=0, sticky="w", pady=5)
-        tiempo_entry = tk.Entry(frame, width=30)
-        tiempo_entry.grid(row=3, column=1, pady=5)
-    
-        tk.Label(frame, text="Precio Boleto:").grid(row=4, column=0, sticky="w", pady=5)
-        precio_entry = tk.Entry(frame, width=30)
-        precio_entry.grid(row=4, column=1, pady=5)
-    
+        tk.Label(frame, text="Origen:", **label_style).grid(row=0, column=0, sticky="w", pady=5, padx=10)
+        origen_entry = tk.Entry(frame, **entry_style)
+        origen_entry.grid(row=0, column=1, pady=5, padx=10, sticky="ew")
+
+        tk.Label(frame, text="Destino:", **label_style).grid(row=1, column=0, sticky="w", pady=5, padx=10)
+        destino_entry = tk.Entry(frame, **entry_style)
+        destino_entry.grid(row=1, column=1, pady=5, padx=10, sticky="ew")
+
+        tk.Label(frame, text="Distancia (km):", **label_style).grid(row=2, column=0, sticky="w", pady=5, padx=10)
+        distancia_entry = tk.Entry(frame, **entry_style)
+        distancia_entry.grid(row=2, column=1, pady=5, padx=10, sticky="ew")
+
+        tk.Label(frame, text="Tiempo Estimado:", **label_style).grid(row=3, column=0, sticky="w", pady=5, padx=10)
+        tiempo_entry = tk.Entry(frame, **entry_style)
+        tiempo_entry.grid(row=3, column=1, pady=5, padx=10, sticky="ew")
+
+        tk.Label(frame, text="Precio Boleto:", **label_style).grid(row=4, column=0, sticky="w", pady=5, padx=10)
+        precio_entry = tk.Entry(frame, **entry_style)
+        precio_entry.grid(row=4, column=1, pady=5, padx=10, sticky="ew")
+
         # Botón para guardar
-        tk.Button(frame, text="Guardar", command=lambda: self.guardar_ruta(
-            origen_entry.get(),
-            destino_entry.get(),
-            distancia_entry.get(),
-            tiempo_entry.get(),
-            precio_entry.get(),
-            popup
-        )).grid(row=5, columnspan=2, pady=20)
+        btn_guardar = tk.Button(frame, text="Guardar", 
+                              command=lambda: self.guardar_ruta(
+                                  origen_entry.get(),
+                                  destino_entry.get(),
+                                  distancia_entry.get(),
+                                  tiempo_entry.get(),
+                                  precio_entry.get(),
+                                  popup
+                              ),
+                              bg='#003366', fg='#FFFFFF', font=('Arial', 10, 'bold'),
+                              relief=tk.FLAT, activebackground='#002244')
+        btn_guardar.grid(row=5, columnspan=2, pady=20, padx=10, sticky="ew")
+
+        # Configurar grid
+        frame.grid_columnconfigure(1, weight=1)
 
     def guardar_ruta(self, origen, destino, distancia, tiempo, precio, popup):
         # Validación mejorada
         if not all([origen, destino, distancia, tiempo, precio]):
             messagebox.showwarning("Advertencia", "Todos los campos son obligatorios")
             return
-    
+
         try:
             distancia_float = float(distancia)
             precio_float = float(precio)
@@ -5333,63 +5393,75 @@ class SistemaERP:
         if not seleccion:
             messagebox.showwarning("Advertencia", "Por favor seleccione una ruta")
             return
-    
+
         datos_ruta = self.tree_rutas.item(seleccion[0], "values")
         ruta_id = datos_ruta[0]
-    
+
         # Crear ventana emergente
         popup = tk.Toplevel(self.root)
         popup.title("Editar Ruta")
-        popup.geometry("400x300")
-    
+        popup.geometry("400x350")
+        popup.configure(bg='#e6ecf0')
+        popup.resizable(False, False)
+
         # Frame principal
-        frame = tk.Frame(popup)
-        frame.pack(padx=20, pady=20)
-    
+        frame = tk.Frame(popup, bg='#FFFFFF', bd=2, relief=tk.RIDGE)
+        frame.pack(padx=20, pady=20, fill=tk.BOTH, expand=True)
+
+        # Estilo para etiquetas
+        label_style = {'bg': '#FFFFFF', 'fg': '#003366', 'font': ('Arial', 10)}
+        entry_style = {'font': ('Arial', 10), 'bd': 1, 'relief': tk.SOLID}
+
         # Campos del formulario con los valores actuales
-        tk.Label(frame, text="Origen:").grid(row=0, column=0, sticky="w", pady=5)
-        origen_entry = tk.Entry(frame, width=30)
-        origen_entry.grid(row=0, column=1, pady=5)
+        tk.Label(frame, text="Origen:", **label_style).grid(row=0, column=0, sticky="w", pady=5, padx=10)
+        origen_entry = tk.Entry(frame, **entry_style)
+        origen_entry.grid(row=0, column=1, pady=5, padx=10, sticky="ew")
         origen_entry.insert(0, datos_ruta[1])
-    
-        tk.Label(frame, text="Destino:").grid(row=1, column=0, sticky="w", pady=5)
-        destino_entry = tk.Entry(frame, width=30)
-        destino_entry.grid(row=1, column=1, pady=5)
+
+        tk.Label(frame, text="Destino:", **label_style).grid(row=1, column=0, sticky="w", pady=5, padx=10)
+        destino_entry = tk.Entry(frame, **entry_style)
+        destino_entry.grid(row=1, column=1, pady=5, padx=10, sticky="ew")
         destino_entry.insert(0, datos_ruta[2])
-    
-        tk.Label(frame, text="Distancia (km):").grid(row=2, column=0, sticky="w", pady=5)
-        distancia_entry = tk.Entry(frame, width=30)
-        distancia_entry.grid(row=2, column=1, pady=5)
+
+        tk.Label(frame, text="Distancia (km):", **label_style).grid(row=2, column=0, sticky="w", pady=5, padx=10)
+        distancia_entry = tk.Entry(frame, **entry_style)
+        distancia_entry.grid(row=2, column=1, pady=5, padx=10, sticky="ew")
         distancia_entry.insert(0, datos_ruta[3].replace(" km", ""))
-    
-        tk.Label(frame, text="Tiempo Estimado:").grid(row=3, column=0, sticky="w", pady=5)
-        tiempo_entry = tk.Entry(frame, width=30)
-        tiempo_entry.grid(row=3, column=1, pady=5)
+
+        tk.Label(frame, text="Tiempo Estimado:", **label_style).grid(row=3, column=0, sticky="w", pady=5, padx=10)
+        tiempo_entry = tk.Entry(frame, **entry_style)
+        tiempo_entry.grid(row=3, column=1, pady=5, padx=10, sticky="ew")
         tiempo_entry.insert(0, datos_ruta[4])
-    
-        tk.Label(frame, text="Precio Boleto:").grid(row=4, column=0, sticky="w", pady=5)
-        precio_entry = tk.Entry(frame, width=30)
-        precio_entry.grid(row=4, column=1, pady=5)
+
+        tk.Label(frame, text="Precio Boleto:", **label_style).grid(row=4, column=0, sticky="w", pady=5, padx=10)
+        precio_entry = tk.Entry(frame, **entry_style)
+        precio_entry.grid(row=4, column=1, pady=5, padx=10, sticky="ew")
         precio_entry.insert(0, datos_ruta[5].replace("$", ""))
-    
+
         # Botón para guardar
-        tk.Button(frame, text="Guardar Cambios", 
-                command=lambda: self.guardar_edicion_ruta(
-                    ruta_id,
-                    origen_entry.get(),
-                    destino_entry.get(),
-                    distancia_entry.get(),
-                    tiempo_entry.get(),
-                    precio_entry.get(),
-                    popup
-                )).grid(row=5, columnspan=2, pady=20)
-    
+        btn_guardar = tk.Button(frame, text="Guardar Cambios", 
+                              command=lambda: self.guardar_edicion_ruta(
+                                  ruta_id,
+                                  origen_entry.get(),
+                                  destino_entry.get(),
+                                  distancia_entry.get(),
+                                  tiempo_entry.get(),
+                                  precio_entry.get(),
+                                  popup
+                              ),
+                              bg='#003366', fg='#FFFFFF', font=('Arial', 10, 'bold'),
+                              relief=tk.FLAT, activebackground='#002244')
+        btn_guardar.grid(row=5, columnspan=2, pady=20, padx=10, sticky="ew")
+
+        # Configurar grid
+        frame.grid_columnconfigure(1, weight=1)
+
     def guardar_edicion_ruta(self, ruta_id, origen, destino, distancia, tiempo, precio, popup):
         # Validación
         if not all([origen, destino, distancia, tiempo, precio]):
             messagebox.showwarning("Advertencia", "Todos los campos son obligatorios")
             return
-    
+
         try:
             distancia_float = float(distancia)
             precio_float = float(precio)
@@ -5398,7 +5470,7 @@ class SistemaERP:
         except ValueError:
             messagebox.showerror("Error", "Distancia y precio deben ser números válidos mayores a 0")
             return
-    
+
         conn = sqlite3.connect('erp_autobuses.db')
         try:
             cursor = conn.cursor()
@@ -5423,7 +5495,7 @@ class SistemaERP:
         # Limpiar treeview
         for item in tree.get_children():
             tree.delete(item)
-    
+
         # Cargar rutas de la base de datos
         conn = sqlite3.connect('erp_autobuses.db')
         cursor = conn.cursor()
@@ -5449,34 +5521,66 @@ class SistemaERP:
 
     def setup_tab_horarios(self, parent):
         # Frame principal
-        frame = tk.Frame(parent)
+        frame = tk.Frame(parent, bg='white')
         frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
-    
+
         # Controles superiores
-        controls_frame = tk.Frame(frame)
+        controls_frame = tk.Frame(frame, bg='white')
         controls_frame.pack(fill=tk.X, pady=10)
-    
-        # Botones
-        tk.Button(controls_frame, text="Agregar Horario", command=self.mostrar_formulario_horario).pack(side=tk.LEFT, padx=5)
-        tk.Button(controls_frame, text="Eliminar Horario", command=self.eliminar_horario).pack(side=tk.LEFT, padx=5)
-        tk.Button(controls_frame, text="Refrescar", command=lambda: self.cargar_horarios(self.tree_horarios)).pack(side=tk.LEFT, padx=5)
-    
+
+        # Botones con estilo consistente
+        btn_style = {
+            'bg': '#003366',
+            'fg': 'white',
+            'font': ('Arial', 10, 'bold'),
+            'relief': 'flat',
+            'activebackground': '#002244'
+        }
+
+        tk.Button(controls_frame, text="Agregar Horario", 
+                 command=self.mostrar_formulario_horario, **btn_style).pack(side=tk.LEFT, padx=5)
+        tk.Button(controls_frame, text="Editar Horario", 
+                 command=self.mostrar_editar_horario, **btn_style).pack(side=tk.LEFT, padx=5)
+        
+        # Botón de eliminar con estilo rojo
+        tk.Button(controls_frame, text="Eliminar Horario", 
+                 command=self.eliminar_horario,
+                 bg='#990000', fg='white',
+                 font=('Arial', 10, 'bold'),
+                 relief='flat', activebackground='#660000').pack(side=tk.LEFT, padx=5)
+
+        # Configurar estilo para Treeview (igual que en rutas)
+        style = ttk.Style()
+        style.configure("Treeview", 
+                      background="#FFFFFF",
+                      foreground="#003366",
+                      rowheight=25,
+                      fieldbackground="#FFFFFF",
+                      font=("Arial", 10))
+        style.configure("Treeview.Heading", 
+                      font=("Arial", 10, "bold"),
+                      background="#e6ecf0",
+                      foreground="#003366")
+        style.map("Treeview", 
+                background=[("selected", "#003366")], 
+                foreground=[("selected", "#FFFFFF")])
+
         # Treeview para mostrar horarios
         columns = ("ID", "Ruta", "Autobús", "Hora Salida", "Hora Llegada", "Días")
         self.tree_horarios = ttk.Treeview(frame, columns=columns, show="headings")
-    
+
         # Configurar columnas
         for col in columns:
             self.tree_horarios.heading(col, text=col)
             self.tree_horarios.column(col, width=120)
-    
-        self.tree_horarios.pack(fill=tk.BOTH, expand=True, pady=10)
-    
+
+        self.tree_horarios.pack(fill=tk.BOTH, expand=True, padx=20, pady=10)
+
         # Scrollbar
         scrollbar = ttk.Scrollbar(frame, orient="vertical", command=self.tree_horarios.yview)
         self.tree_horarios.configure(yscrollcommand=scrollbar.set)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-    
+
         # Cargar datos
         self.cargar_horarios(self.tree_horarios)
 
@@ -5486,15 +5590,15 @@ class SistemaERP:
         if not seleccion:
             messagebox.showwarning("Advertencia", "Por favor seleccione un horario")
             return
-    
+
         horario_id = self.tree_horarios.item(seleccion[0], "values")[0]
-    
+
         # Confirmar eliminación
         if not messagebox.askyesno("Confirmar", 
                                 "¿Está seguro de eliminar este horario?\n"
                                 "Esta acción también eliminará todos los boletos asociados."):
             return
-    
+
         conn = sqlite3.connect('erp_autobuses.db')
         try:
             cursor = conn.cursor()
@@ -5528,53 +5632,180 @@ class SistemaERP:
         # Crear ventana emergente
         popup = tk.Toplevel(self.root)
         popup.title("Agregar Horario")
-        popup.geometry("500x300")
-    
+        popup.geometry("500x350")
+        popup.configure(bg='#e6ecf0')
+        popup.resizable(False, False)
+
         # Frame principal
-        frame = tk.Frame(popup)
-        frame.pack(padx=20, pady=20)
-    
+        frame = tk.Frame(popup, bg='#FFFFFF', bd=2, relief=tk.RIDGE)
+        frame.pack(padx=20, pady=20, fill=tk.BOTH, expand=True)
+
+        # Estilo para etiquetas
+        label_style = {'bg': '#FFFFFF', 'fg': '#003366', 'font': ('Arial', 10)}
+        entry_style = {'font': ('Arial', 10), 'bd': 1, 'relief': tk.SOLID}
+        combobox_style = {'font': ('Arial', 10)}
+
         # Campos del formulario
-        tk.Label(frame, text="Ruta:").grid(row=0, column=0, sticky="w", pady=5)
-        ruta_combobox = ttk.Combobox(frame, width=30)
-        ruta_combobox.grid(row=0, column=1, pady=5)
-    
-        tk.Label(frame, text="Autobús:").grid(row=1, column=0, sticky="w", pady=5)
-        autobus_combobox = ttk.Combobox(frame, width=30)
-        autobus_combobox.grid(row=1, column=1, pady=5)
-    
-        tk.Label(frame, text="Hora Salida:").grid(row=2, column=0, sticky="w", pady=5)
-        hora_salida_entry = tk.Entry(frame, width=30)
-        hora_salida_entry.grid(row=2, column=1, pady=5)
+        tk.Label(frame, text="Ruta:", **label_style).grid(row=0, column=0, sticky="w", pady=5, padx=10)
+        ruta_combobox = ttk.Combobox(frame, **combobox_style)
+        ruta_combobox.grid(row=0, column=1, pady=5, padx=10, sticky="ew")
+
+        tk.Label(frame, text="Autobús:", **label_style).grid(row=1, column=0, sticky="w", pady=5, padx=10)
+        autobus_combobox = ttk.Combobox(frame, **combobox_style)
+        autobus_combobox.grid(row=1, column=1, pady=5, padx=10, sticky="ew")
+
+        tk.Label(frame, text="Hora Salida:", **label_style).grid(row=2, column=0, sticky="w", pady=5, padx=10)
+        hora_salida_entry = tk.Entry(frame, **entry_style)
+        hora_salida_entry.grid(row=2, column=1, pady=5, padx=10, sticky="ew")
         hora_salida_entry.insert(0, "HH:MM")
-    
-        tk.Label(frame, text="Hora Llegada:").grid(row=3, column=0, sticky="w", pady=5)
-        hora_llegada_entry = tk.Entry(frame, width=30)
-        hora_llegada_entry.grid(row=3, column=1, pady=5)
+
+        tk.Label(frame, text="Hora Llegada:", **label_style).grid(row=3, column=0, sticky="w", pady=5, padx=10)
+        hora_llegada_entry = tk.Entry(frame, **entry_style)
+        hora_llegada_entry.grid(row=3, column=1, pady=5, padx=10, sticky="ew")
         hora_llegada_entry.insert(0, "HH:MM")
-    
-        tk.Label(frame, text="Días de Operación:").grid(row=4, column=0, sticky="w", pady=5)
-        dias_entry = tk.Entry(frame, width=30)
-        dias_entry.grid(row=4, column=1, pady=5)
+
+        tk.Label(frame, text="Días de Operación:", **label_style).grid(row=4, column=0, sticky="w", pady=5, padx=10)
+        dias_entry = tk.Entry(frame, **entry_style)
+        dias_entry.grid(row=4, column=1, pady=5, padx=10, sticky="ew")
         dias_entry.insert(0, "Lunes-Viernes")
-    
+
         # Cargar rutas y autobuses en los combobox
         self.cargar_rutas_autobuses_combobox(ruta_combobox, autobus_combobox)
-    
+
         # Botón para guardar
-        tk.Button(frame, text="Guardar", command=lambda: self.guardar_horario(
-            ruta_combobox.get(),
-            autobus_combobox.get(),
-            hora_salida_entry.get(),
-            hora_llegada_entry.get(),
-            dias_entry.get(),
-            popup
-        )).grid(row=5, columnspan=2, pady=20)
+        btn_guardar = tk.Button(frame, text="Guardar", 
+                              command=lambda: self.guardar_horario(
+                                  ruta_combobox.get(),
+                                  autobus_combobox.get(),
+                                  hora_salida_entry.get(),
+                                  hora_llegada_entry.get(),
+                                  dias_entry.get(),
+                                  popup
+                              ),
+                              bg='#003366', fg='#FFFFFF', font=('Arial', 10, 'bold'),
+                              relief=tk.FLAT, activebackground='#002244')
+        btn_guardar.grid(row=5, columnspan=2, pady=20, padx=10, sticky="ew")
+
+        # Configurar grid
+        frame.grid_columnconfigure(1, weight=1)
+
+    def mostrar_editar_horario(self):
+        # Obtener horario seleccionado
+        seleccion = self.tree_horarios.selection()
+        if not seleccion:
+            messagebox.showwarning("Advertencia", "Por favor seleccione un horario")
+            return
+
+        datos_horario = self.tree_horarios.item(seleccion[0], "values")
+        horario_id = datos_horario[0]
+
+        # Crear ventana emergente
+        popup = tk.Toplevel(self.root)
+        popup.title("Editar Horario")
+        popup.geometry("500x350")
+        popup.configure(bg='#e6ecf0')
+        popup.resizable(False, False)
+
+        # Frame principal
+        frame = tk.Frame(popup, bg='#FFFFFF', bd=2, relief=tk.RIDGE)
+        frame.pack(padx=20, pady=20, fill=tk.BOTH, expand=True)
+
+        # Estilo para etiquetas
+        label_style = {'bg': '#FFFFFF', 'fg': '#003366', 'font': ('Arial', 10)}
+        entry_style = {'font': ('Arial', 10), 'bd': 1, 'relief': tk.SOLID}
+        combobox_style = {'font': ('Arial', 10)}
+
+        # Campos del formulario con los valores actuales
+        tk.Label(frame, text="Ruta:", **label_style).grid(row=0, column=0, sticky="w", pady=5, padx=10)
+        ruta_combobox = ttk.Combobox(frame, **combobox_style)
+        ruta_combobox.grid(row=0, column=1, pady=5, padx=10, sticky="ew")
+
+        tk.Label(frame, text="Autobús:", **label_style).grid(row=1, column=0, sticky="w", pady=5, padx=10)
+        autobus_combobox = ttk.Combobox(frame, **combobox_style)
+        autobus_combobox.grid(row=1, column=1, pady=5, padx=10, sticky="ew")
+
+        tk.Label(frame, text="Hora Salida:", **label_style).grid(row=2, column=0, sticky="w", pady=5, padx=10)
+        hora_salida_entry = tk.Entry(frame, **entry_style)
+        hora_salida_entry.grid(row=2, column=1, pady=5, padx=10, sticky="ew")
+        hora_salida_entry.insert(0, datos_horario[3])
+
+        tk.Label(frame, text="Hora Llegada:", **label_style).grid(row=3, column=0, sticky="w", pady=5, padx=10)
+        hora_llegada_entry = tk.Entry(frame, **entry_style)
+        hora_llegada_entry.grid(row=3, column=1, pady=5, padx=10, sticky="ew")
+        hora_llegada_entry.insert(0, datos_horario[4])
+
+        tk.Label(frame, text="Días de Operación:", **label_style).grid(row=4, column=0, sticky="w", pady=5, padx=10)
+        dias_entry = tk.Entry(frame, **entry_style)
+        dias_entry.grid(row=4, column=1, pady=5, padx=10, sticky="ew")
+        dias_entry.insert(0, datos_horario[5])
+
+        # Cargar rutas y autobuses en los combobox con los valores actuales
+        self.cargar_rutas_autobuses_combobox(ruta_combobox, autobus_combobox)
+        
+        # Establecer los valores actuales en los combobox
+        ruta_combobox.set(datos_horario[1])
+        autobus_combobox.set(datos_horario[2])
+
+        # Botón para guardar
+        btn_guardar = tk.Button(frame, text="Guardar Cambios", 
+                              command=lambda: self.guardar_edicion_horario(
+                                  horario_id,
+                                  ruta_combobox.get(),
+                                  autobus_combobox.get(),
+                                  hora_salida_entry.get(),
+                                  hora_llegada_entry.get(),
+                                  dias_entry.get(),
+                                  popup
+                              ),
+                              bg='#003366', fg='#FFFFFF', font=('Arial', 10, 'bold'),
+                              relief=tk.FLAT, activebackground='#002244')
+        btn_guardar.grid(row=5, columnspan=2, pady=20, padx=10, sticky="ew")
+
+        # Configurar grid
+        frame.grid_columnconfigure(1, weight=1)
+
+    def guardar_edicion_horario(self, horario_id, ruta, autobus, hora_salida, hora_llegada, dias, popup):
+        # Validación mejorada
+        if not all([ruta, autobus, hora_salida, hora_llegada, dias]):
+            messagebox.showwarning("Advertencia", "Todos los campos son obligatorios")
+            return
+
+        # Validar formato de horas (HH:MM)
+        if not (re.match(r'^[0-2][0-9]:[0-5][0-9]$', hora_salida) and 
+                re.match(r'^[0-2][0-9]:[0-5][0-9]$', hora_llegada)):
+            messagebox.showerror("Error", "Formato de hora debe ser HH:MM (24 horas)")
+            return
+
+        try:
+            ruta_id = int(ruta.split("-")[0].strip())
+            autobus_id = int(autobus.split("-")[0].strip())
+        except (ValueError, AttributeError):
+            messagebox.showerror("Error", "Selección de ruta o autobús no válida")
+            return
+
+        conn = sqlite3.connect('erp_autobuses.db')
+        try:
+            cursor = conn.cursor()
+            cursor.execute("""
+                UPDATE horarios 
+                SET ruta_id = ?, autobus_id = ?, hora_salida = ?, hora_llegada = ?, dias_semana = ?
+                WHERE id = ?
+            """, (ruta_id, autobus_id, hora_salida, hora_llegada, dias, horario_id))
+        
+            conn.commit()
+            messagebox.showinfo("Éxito", "Horario actualizado correctamente")
+            popup.destroy()
+            self.cargar_horarios(self.tree_horarios)  # Actualizar la lista
+        except Exception as e:
+            messagebox.showerror("Error", f"Error al actualizar horario: {str(e)}")
+            conn.rollback()
+        finally:
+            conn.close()
 
     def cargar_rutas_autobuses_combobox(self, ruta_combobox, autobus_combobox):
         conn = sqlite3.connect('erp_autobuses.db')
         cursor = conn.cursor()
-    
+
         try:
             # Cargar rutas
             cursor.execute("SELECT id, origen, destino FROM rutas ORDER BY origen, destino")
@@ -5595,7 +5826,7 @@ class SistemaERP:
         if not all([ruta, autobus, hora_salida, hora_llegada, dias]):
             messagebox.showwarning("Advertencia", "Todos los campos son obligatorios")
             return
-    
+
         # Validar formato de horas (HH:MM)
         if not (re.match(r'^[0-2][0-9]:[0-5][0-9]$', hora_salida) and 
                 re.match(r'^[0-2][0-9]:[0-5][0-9]$', hora_llegada)):
@@ -5631,7 +5862,7 @@ class SistemaERP:
         # Limpiar treeview
         for item in tree.get_children():
             tree.delete(item)
-    
+
         # Cargar horarios de la base de datos
         conn = sqlite3.connect('erp_autobuses.db')
         cursor = conn.cursor()
@@ -5656,7 +5887,6 @@ class SistemaERP:
             messagebox.showerror("Error", f"Error al cargar horarios: {str(e)}")
         finally:
             conn.close()
-
 # =================== MÓDULO DE REPORTES GENERALES =====================
     def mostrar_reportes_generales(self):
         # Limpiar ventana
