@@ -5930,43 +5930,42 @@ class SistemaERP:
         # Limpiar ventana
         for widget in self.root.winfo_children():
             widget.destroy()
-    
+
         # Frame principal
         main_frame = tk.Frame(self.root)
         main_frame.pack(fill=tk.BOTH, expand=True)
-    
+
         # Barra superior
         top_frame = tk.Frame(main_frame)
         top_frame.pack(fill=tk.X, padx=10, pady=5)
-    
+
         # Botón de regreso
         back_btn = tk.Button(top_frame, text="Volver al Menú", command=self.mostrar_menu_principal)
         back_btn.pack(side=tk.RIGHT)
-    
+
         # Título
         tk.Label(top_frame, text="Reportes Generales", font=("Arial", 16)).pack(side=tk.LEFT)
-    
+
         # Frame de contenido
         content_frame = tk.Frame(main_frame)
         content_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
-    
+
         # Opciones para generar reportes
         options_frame = tk.Frame(content_frame)
         options_frame.pack(fill=tk.X, pady=10)
-    
+
         # Selector de tipo de reporte
         tk.Label(options_frame, text="Tipo de Reporte:").pack(side=tk.LEFT, padx=5)
         self.tipo_reporte = ttk.Combobox(options_frame, values=[
             "Empleados por Departamento", 
-            "Estado de Autobuses",
             "Ventas Totales",
             "Gastos Totales"
         ], width=20)
         self.tipo_reporte.pack(side=tk.LEFT, padx=5)
-    
+
         # Botón para generar
         tk.Button(options_frame, text="Generar Reporte", command=self.generar_reporte_general).pack(side=tk.LEFT, padx=10)
-    
+
         # Frame para resultado
         self.resultado_reporte_frame = tk.Frame(content_frame)
         self.resultado_reporte_frame.pack(fill=tk.BOTH, expand=True, pady=20)
@@ -5975,17 +5974,15 @@ class SistemaERP:
         # Limpiar frame de resultados
         for widget in self.resultado_reporte_frame.winfo_children():
             widget.destroy()
-    
+
         tipo_reporte = self.tipo_reporte.get()
-    
+
         if not tipo_reporte:
             messagebox.showwarning("Advertencia", "Debe seleccionar un tipo de reporte")
             return
-    
+
         if tipo_reporte == "Empleados por Departamento":
             self.generar_reporte_empleados_departamento()
-        elif tipo_reporte == "Estado de Autobuses":
-            self.generar_reporte_estado_autobuses()
         elif tipo_reporte == "Ventas Totales":
             self.generar_reporte_ventas_totales()
         elif tipo_reporte == "Gastos Totales":
@@ -5994,7 +5991,7 @@ class SistemaERP:
     def generar_reporte_empleados_departamento(self):
         conn = sqlite3.connect('erp_autobuses.db')
         cursor = conn.cursor()
-    
+
         try:
             # Obtener empleados por departamento
             cursor.execute("""
@@ -6055,63 +6052,10 @@ class SistemaERP:
         finally:
             conn.close()
 
-    def generar_reporte_estado_autobuses(self):
-        conn = sqlite3.connect('erp_autobuses.db')
-        cursor = conn.cursor()
-    
-        try:
-            # Obtener estado de autobuses
-            cursor.execute("""
-                SELECT estado, COUNT(*) as cantidad
-                FROM autobuses
-                GROUP BY estado
-                ORDER BY cantidad DESC
-            """)
-        
-            resultados = cursor.fetchall()
-        
-            if not resultados:
-                tk.Label(self.resultado_reporte_frame, text="No hay autobuses registrados").pack(pady=20)
-                return
-        
-            # Crear tabla
-            tk.Label(self.resultado_reporte_frame, text="Estado de Autobuses", font=("Arial", 14, "bold")).pack(pady=10)
-        
-            tree = ttk.Treeview(self.resultado_reporte_frame, columns=("Estado", "Cantidad"), show="headings")
-            tree.heading("Estado", text="Estado")
-            tree.heading("Cantidad", text="Cantidad")
-        
-            tree.column("Estado", width=150)
-            tree.column("Cantidad", width=100)
-        
-            for row in resultados:
-                tree.insert("", tk.END, values=row)
-        
-            tree.pack(fill=tk.BOTH, expand=True, pady=10)
-        
-            # Crear gráfico circular
-            figure = plt.Figure(figsize=(6, 6), dpi=100)
-            ax = figure.add_subplot(111)
-        
-            estados = [row[0] for row in resultados]
-            cantidades = [row[1] for row in resultados]
-        
-            ax.pie(cantidades, labels=estados, autopct='%1.1f%%', startangle=90)
-            ax.set_title('Distribución de Autobuses por Estado')
-            ax.axis('equal')
-        
-            canvas = FigureCanvasTkAgg(figure, self.resultado_reporte_frame)
-            canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
-        
-        except Exception as e:
-            messagebox.showerror("Error", f"Error al generar reporte: {str(e)}")
-        finally:
-            conn.close()
-
     def generar_reporte_ventas_totales(self):
         conn = sqlite3.connect('erp_autobuses.db')
         cursor = conn.cursor()
-    
+
         try:
             # Obtener ventas totales por mes
             cursor.execute("""
@@ -6175,7 +6119,7 @@ class SistemaERP:
     def generar_reporte_gastos_totales(self):
         conn = sqlite3.connect('erp_autobuses.db')
         cursor = conn.cursor()
-    
+
         try:
             # Obtener gastos totales por mes
             cursor.execute("""
