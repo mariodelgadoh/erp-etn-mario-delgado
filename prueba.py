@@ -2368,19 +2368,21 @@ class SistemaERP:
             ax.set_ylabel('Monto ($)', color='#003366', labelpad=10)
             ax.grid(True, color='#e6ecf0', linestyle='--', alpha=0.7)
             
-            # Ajustar etiquetas del eje x sin inclinación
+            # Solución al error de set_ticklabels - usar set_xticks primero
+            ax.set_xticks(range(len(categorias)))
             ax.set_xticklabels(categorias, color='#003366')
             
             # Ajustar márgenes para evitar que las etiquetas se corten
             figure.tight_layout()
             
-            # Agregar etiquetas con valores en las barras
+            # Agregar etiquetas con valores en las barras (sin recuadro negro)
             for bar in bars:
                 height = bar.get_height()
                 ax.text(bar.get_x() + bar.get_width()/2., height,
                         f'${height:,.0f}',
-                        ha='center', va='bottom', color='#003366', fontsize=9)
-            
+                        ha='center', va='bottom', color='#003366', fontsize=9,
+                        bbox=dict(facecolor='white', edgecolor='none', pad=1))  # Fondo blanco sin borde
+        
             # Crear canvas para el gráfico
             canvas = FigureCanvasTkAgg(figure, self.resultado_frame)
             canvas.draw()
