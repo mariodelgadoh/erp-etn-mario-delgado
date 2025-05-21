@@ -2398,7 +2398,6 @@ class SistemaERP:
         for widget in self.root.winfo_children():
             widget.destroy()
 
-
 # ==================== MÓDULO DE INVENTARIO ====================
     
     def mostrar_modulo_inventario(self):
@@ -4495,165 +4494,166 @@ class SistemaERP:
 
 # =================== MÓDULO DE VENTAS =================================
     def mostrar_modulo_ventas(self):
-        # Limpiar ventana
-        for widget in self.root.winfo_children():
-            widget.destroy()
-        
-        # Configurar fondo general
-        self.root.configure(bg='#e6ecf0')
-        
-        # Frame principal
-        main_frame = tk.Frame(self.root, bg='#e6ecf0')
-        main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
-        
-        # Barra superior
-        top_frame = tk.Frame(main_frame, bg='white', bd=2, relief='ridge')
-        top_frame.pack(fill=tk.X, padx=10, pady=5)
-        
-        # Botón de regreso
-        back_btn = tk.Button(top_frame, text="Volver al Menú", 
-                        command=self.mostrar_menu_principal,
-                        bg='#003366', fg='white',
-                        font=('Arial', 10, 'bold'),
-                        relief='flat', activebackground='#002244')
-        back_btn.pack(side=tk.RIGHT, padx=10, pady=5)
-        
-        # Botón de clientes
-        clientes_btn = tk.Button(top_frame, text="Clientes", 
-                            command=self.mostrar_clientes,
+            # Limpiar ventana
+            for widget in self.root.winfo_children():
+                widget.destroy()
+            
+            # Configurar fondo general
+            self.root.configure(bg='#e6ecf0')
+            
+            # Frame principal
+            main_frame = tk.Frame(self.root, bg='#e6ecf0')
+            main_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+            
+            # Barra superior
+            top_frame = tk.Frame(main_frame, bg='white', bd=2, relief='ridge')
+            top_frame.pack(fill=tk.X, padx=10, pady=5)
+            
+            # Botón de regreso
+            back_btn = tk.Button(top_frame, text="Volver al Menú", 
+                            command=self.mostrar_menu_principal,
                             bg='#003366', fg='white',
                             font=('Arial', 10, 'bold'),
                             relief='flat', activebackground='#002244')
-        clientes_btn.pack(side=tk.RIGHT, padx=5, pady=5)
-        
-        # Título
-        tk.Label(top_frame, text="Módulo de Ventas", 
-                font=("Arial", 16, "bold"), fg='#003366', bg='white').pack(side=tk.LEFT, padx=10)
-        
-        # Frame de contenido (ahora centrado)
-        content_frame = tk.Frame(main_frame, bg='white', bd=2, relief='ridge')
-        content_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
-        
-        # Frame contenedor para centrar el formulario
-        center_container = tk.Frame(content_frame, bg='white')
-        center_container.pack(expand=True, fill=tk.BOTH)
-        
-        # Frame para el formulario de venta (ahora centrado)
-        form_container = tk.Frame(center_container, bg='white')
-        form_container.pack(expand=True)
-        
-        # Título
-        tk.Label(form_container, text="Venta de Boletos", 
-            font=("Arial", 14, 'bold'), fg='#003366', bg='#FFFFFF').pack(pady=(5, 5))
+            back_btn.pack(side=tk.RIGHT, padx=10, pady=5)
+            
+            # Botón de clientes
+            clientes_btn = tk.Button(top_frame, text="Clientes", 
+                                command=self.mostrar_clientes,
+                                bg='#003366', fg='white',
+                                font=('Arial', 10, 'bold'),
+                                relief='flat', activebackground='#002244')
+            clientes_btn.pack(side=tk.RIGHT, padx=5, pady=5)
+            
+            # Título
+            tk.Label(top_frame, text="Módulo de Ventas", 
+                    font=("Arial", 16, "bold"), fg='#003366', bg='white').pack(side=tk.LEFT, padx=10)
+            
+            # Frame de contenido (ahora centrado)
+            content_frame = tk.Frame(main_frame, bg='white', bd=2, relief='ridge')
+            content_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+            
+            # Frame contenedor para centrar el formulario
+            center_container = tk.Frame(content_frame, bg='white')
+            center_container.pack(expand=True, fill=tk.BOTH)
+            
+            # Frame para el formulario de venta (ahora centrado)
+            form_container = tk.Frame(center_container, bg='white')
+            form_container.pack(expand=True)
+            
+            # Título
+            tk.Label(form_container, text="Venta de Boletos", 
+                font=("Arial", 14, 'bold'), fg='#003366', bg='#FFFFFF').pack(pady=(5, 5))
 
-        # Logo debajo del título
-        try:
-            logo_img = Image.open("logo.png")  # Asegúrate que la ruta es correcta
-            logo_img = logo_img.resize((150, 150), Image.LANCZOS)
-            self.logo_tk = ImageTk.PhotoImage(logo_img)  # Mantener en self para evitar garbage collection
-            logo_label = tk.Label(form_container, image=self.logo_tk, bg='#FFFFFF')
-            logo_label.pack(pady=(0, 10))
-        except Exception as e:
-            print("Error cargando logo:", e)
+            # Logo debajo del título
+            try:
+                logo_img = Image.open("logo.png")  # Asegúrate que la ruta es correcta
+                logo_img = logo_img.resize((150, 150), Image.LANCZOS)
+                self.logo_tk = ImageTk.PhotoImage(logo_img)  # Mantener en self para evitar garbage collection
+                logo_label = tk.Label(form_container, image=self.logo_tk, bg='#FFFFFF')
+                logo_label.pack(pady=(0, 10))
+            except Exception as e:
+                print("Error cargando logo:", e)
 
-        # Frame interno para los campos del formulario
-        form_frame = tk.Frame(form_container, bg='white')
-        form_frame.pack(pady=10)
+            # Frame interno para los campos del formulario
+            form_frame = tk.Frame(form_container, bg='white')
+            form_frame.pack(pady=10)
 
-        # Campos del formulario (ahora centrados)
-        tk.Label(form_frame, text="Nombre Pasajero:", 
-                bg='white', fg='#003366', font=('Arial', 11)).grid(row=0, column=0, sticky="w", pady=5, padx=5)
-        self.nombre_pasajero_entry = tk.Entry(form_frame, width=30, 
+            # Campos del formulario (ahora centrados)
+            tk.Label(form_frame, text="Nombre Pasajero:", 
+                    bg='white', fg='#003366', font=('Arial', 11)).grid(row=0, column=0, sticky="w", pady=5, padx=5)
+            self.nombre_pasajero_entry = tk.Entry(form_frame, width=30, 
+                                                font=('Arial', 11), bd=1, relief='solid')
+            self.nombre_pasajero_entry.grid(row=0, column=1, pady=5, padx=5)
+            
+            tk.Label(form_frame, text="Apellidos Pasajero:", 
+                    bg='white', fg='#003366', font=('Arial', 11)).grid(row=1, column=0, sticky="w", pady=5, padx=5)
+            self.apellidos_pasajero_entry = tk.Entry(form_frame, width=30, 
+                                                font=('Arial', 11), bd=1, relief='solid')
+            self.apellidos_pasajero_entry.grid(row=1, column=1, pady=5, padx=5)
+            
+            # Nuevo campo de fecha movido aquí
+            tk.Label(form_frame, text="Fecha de Viaje:", 
+                    bg='white', fg='#003366', font=('Arial', 11)).grid(row=2, column=0, sticky="w", pady=5, padx=5)
+            self.fecha_viaje_entry = DateEntry(form_frame, width=12, 
+                                            background='darkblue', foreground='white', 
+                                            borderwidth=2, font=('Arial', 11))
+            self.fecha_viaje_entry.grid(row=2, column=1, pady=5, padx=5, sticky="w")
+            
+            tk.Label(form_frame, text="Ruta:", 
+                    bg='white', fg='#003366', font=('Arial', 11)).grid(row=3, column=0, sticky="w", pady=5, padx=5)
+            self.ruta_combobox = ttk.Combobox(form_frame, width=27, font=('Arial', 11))
+            self.ruta_combobox.grid(row=3, column=1, pady=5, padx=5, sticky="w")
+            self.ruta_combobox.bind("<<ComboboxSelected>>", self.actualizar_horarios_disponibles)
+            
+            tk.Label(form_frame, text="Horario:", 
+                    bg='white', fg='#003366', font=('Arial', 11)).grid(row=4, column=0, sticky="w", pady=5, padx=5)
+            self.horario_combobox = ttk.Combobox(form_frame, width=27, font=('Arial', 11))
+            self.horario_combobox.grid(row=4, column=1, pady=5, padx=5, sticky="w")
+            self.horario_combobox.bind("<<ComboboxSelected>>", self.actualizar_asientos_disponibles)
+            
+            tk.Label(form_frame, text="Asientos:", 
+                    bg='white', fg='#003366', font=('Arial', 11)).grid(row=5, column=0, sticky="w", pady=5, padx=5)
+            self.asientos_listbox = tk.Listbox(form_frame, selectmode=tk.MULTIPLE, 
+                                            width=25, height=5, exportselection=False,
                                             font=('Arial', 11), bd=1, relief='solid')
-        self.nombre_pasajero_entry.grid(row=0, column=1, pady=5, padx=5)
-        
-        tk.Label(form_frame, text="Apellidos Pasajero:", 
-                bg='white', fg='#003366', font=('Arial', 11)).grid(row=1, column=0, sticky="w", pady=5, padx=5)
-        self.apellidos_pasajero_entry = tk.Entry(form_frame, width=30, 
-                                            font=('Arial', 11), bd=1, relief='solid')
-        self.apellidos_pasajero_entry.grid(row=1, column=1, pady=5, padx=5)
-        
-        tk.Label(form_frame, text="Ruta:", 
-                bg='white', fg='#003366', font=('Arial', 11)).grid(row=2, column=0, sticky="w", pady=5, padx=5)
-        self.ruta_combobox = ttk.Combobox(form_frame, width=27, font=('Arial', 11))
-        self.ruta_combobox.grid(row=2, column=1, pady=5, padx=5, sticky="w")
-        self.ruta_combobox.bind("<<ComboboxSelected>>", self.actualizar_horarios_disponibles)
-        
-        tk.Label(form_frame, text="Horario:", 
-                bg='white', fg='#003366', font=('Arial', 11)).grid(row=3, column=0, sticky="w", pady=5, padx=5)
-        self.horario_combobox = ttk.Combobox(form_frame, width=27, font=('Arial', 11))
-        self.horario_combobox.grid(row=3, column=1, pady=5, padx=5, sticky="w")
-        self.horario_combobox.bind("<<ComboboxSelected>>", self.actualizar_asientos_disponibles)
-        
-        tk.Label(form_frame, text="Fecha de Viaje:", 
-                bg='white', fg='#003366', font=('Arial', 11)).grid(row=4, column=0, sticky="w", pady=5, padx=5)
-        self.fecha_viaje_entry = DateEntry(form_frame, width=12, 
-                                        background='darkblue', foreground='white', 
-                                        borderwidth=2, font=('Arial', 11))
-        self.fecha_viaje_entry.grid(row=4, column=1, pady=5, padx=5, sticky="w")
-        
-        tk.Label(form_frame, text="Asientos:", 
-                bg='white', fg='#003366', font=('Arial', 11)).grid(row=5, column=0, sticky="w", pady=5, padx=5)
-        self.asientos_listbox = tk.Listbox(form_frame, selectmode=tk.MULTIPLE, 
-                                        width=25, height=5, exportselection=False,
-                                        font=('Arial', 11), bd=1, relief='solid')
-        self.asientos_listbox.grid(row=5, column=1, pady=5, padx=5, sticky="w")
-        self.asientos_listbox.bind('<<ListboxSelect>>', self.actualizar_cantidad_desde_asientos)
-        
-        # Frame para cantidad y precio
-        cantidad_frame = tk.Frame(form_frame, bg='white')
-        cantidad_frame.grid(row=6, column=0, columnspan=2, pady=10)
-        
-        tk.Label(cantidad_frame, text="Cantidad:", 
-                bg='white', fg='#003366', font=('Arial', 11)).pack(side=tk.LEFT)
-        self.cantidad_spinbox = tk.Spinbox(cantidad_frame, from_=1, to=10, width=5, 
-                                        font=('Arial', 11), bd=1, relief='solid',
-                                        command=self.actualizar_asientos_desde_cantidad)
-        self.cantidad_spinbox.pack(side=tk.LEFT, padx=5)
-        self.cantidad_spinbox.bind("<KeyRelease>", self.actualizar_asientos_desde_cantidad)
-        
-        tk.Label(cantidad_frame, text="Precio Unitario:", 
-                bg='white', fg='#003366', font=('Arial', 11)).pack(side=tk.LEFT, padx=(10,0))
-        self.precio_unitario_label = tk.Label(cantidad_frame, text="$0.00", 
-                                            bg='white', fg='#003366', font=('Arial', 11))
-        self.precio_unitario_label.pack(side=tk.LEFT)
-        
-        tk.Label(cantidad_frame, text="Total:", 
-                bg='white', fg='#003366', font=('Arial', 11, 'bold')).pack(side=tk.LEFT, padx=(10,0))
-        self.precio_total_label = tk.Label(cantidad_frame, text="$0.00", 
-                                        bg='white', fg='#003366', font=('Arial', 11, 'bold'))
-        self.precio_total_label.pack(side=tk.LEFT)
-        
-        # Frame para el botón de vender (centrado)
-        button_frame = tk.Frame(form_container, bg='white')
-        button_frame.pack(pady=20)
-        
-        # Botón para vender boleto
-        sell_btn = tk.Button(button_frame, text="Vender Boletos", 
-                        command=self.vender_boletos,
-                        bg='#003366', fg='white',
-                        font=('Arial', 12, 'bold'),
-                        relief='flat', activebackground='#002244')
-        sell_btn.pack()
-        
-        # Configurar estilo para Treeview (si hubiera uno en este módulo)
-        style = ttk.Style()
-        style.configure("Treeview", 
-                    background="#FFFFFF",
-                    foreground="#003366",
-                    rowheight=25,
-                    fieldbackground="#FFFFFF",
-                    font=("Arial", 10))
-        style.configure("Treeview.Heading", 
-                    font=("Arial", 10, "bold"),
-                    background="#e6ecf0",
-                    foreground="#003366")
-        style.map("Treeview", 
-                background=[("selected", "#003366")], 
-                foreground=[("selected", "#FFFFFF")])
-        
-        # Cargar rutas en el combobox
-        self.cargar_rutas_combobox()
+            self.asientos_listbox.grid(row=5, column=1, pady=5, padx=5, sticky="w")
+            self.asientos_listbox.bind('<<ListboxSelect>>', self.actualizar_cantidad_desde_asientos)
+            
+            # Frame para cantidad y precio
+            cantidad_frame = tk.Frame(form_frame, bg='white')
+            cantidad_frame.grid(row=6, column=0, columnspan=2, pady=10)
+            
+            tk.Label(cantidad_frame, text="Cantidad:", 
+                    bg='white', fg='#003366', font=('Arial', 11)).pack(side=tk.LEFT)
+            self.cantidad_spinbox = tk.Spinbox(cantidad_frame, from_=1, to=10, width=5, 
+                                            font=('Arial', 11), bd=1, relief='solid',
+                                            command=self.actualizar_asientos_desde_cantidad)
+            self.cantidad_spinbox.pack(side=tk.LEFT, padx=5)
+            self.cantidad_spinbox.bind("<KeyRelease>", self.actualizar_asientos_desde_cantidad)
+            
+            tk.Label(cantidad_frame, text="Precio Unitario:", 
+                    bg='white', fg='#003366', font=('Arial', 11)).pack(side=tk.LEFT, padx=(10,0))
+            self.precio_unitario_label = tk.Label(cantidad_frame, text="$0.00", 
+                                                bg='white', fg='#003366', font=('Arial', 11))
+            self.precio_unitario_label.pack(side=tk.LEFT)
+            
+            tk.Label(cantidad_frame, text="Total:", 
+                    bg='white', fg='#003366', font=('Arial', 11, 'bold')).pack(side=tk.LEFT, padx=(10,0))
+            self.precio_total_label = tk.Label(cantidad_frame, text="$0.00", 
+                                            bg='white', fg='#003366', font=('Arial', 11, 'bold'))
+            self.precio_total_label.pack(side=tk.LEFT)
+            
+            # Frame para el botón de vender (centrado)
+            button_frame = tk.Frame(form_container, bg='white')
+            button_frame.pack(pady=20)
+            
+            # Botón para vender boleto
+            sell_btn = tk.Button(button_frame, text="Vender Boletos", 
+                            command=self.vender_boletos,
+                            bg='#003366', fg='white',
+                            font=('Arial', 12, 'bold'),
+                            relief='flat', activebackground='#002244')
+            sell_btn.pack()
+            
+            # Configurar estilo para Treeview (si hubiera uno en este módulo)
+            style = ttk.Style()
+            style.configure("Treeview", 
+                        background="#FFFFFF",
+                        foreground="#003366",
+                        rowheight=25,
+                        fieldbackground="#FFFFFF",
+                        font=("Arial", 10))
+            style.configure("Treeview.Heading", 
+                        font=("Arial", 10, "bold"),
+                        background="#e6ecf0",
+                        foreground="#003366")
+            style.map("Treeview", 
+                    background=[("selected", "#003366")], 
+                    foreground=[("selected", "#FFFFFF")])
+            
+            # Cargar rutas en el combobox
+            self.cargar_rutas_combobox()
 
     def cargar_rutas_combobox(self):
         conn = sqlite3.connect('erp_autobuses.db')
@@ -5410,7 +5410,7 @@ class SistemaERP:
         distancia_entry.grid(row=2, column=1, pady=5, sticky="w")
         
         # Tiempo Estimado
-        tk.Label(form_fields, text="Tiempo Estimado:", **estilo_etiqueta).grid(row=3, column=0, sticky="w")
+        tk.Label(form_fields, text="Tiempo Estimado (min):", **estilo_etiqueta).grid(row=3, column=0, sticky="w")
         tiempo_entry = tk.Entry(form_fields, **estilo_entrada)
         tiempo_entry.grid(row=3, column=1, pady=5, sticky="w")
         
